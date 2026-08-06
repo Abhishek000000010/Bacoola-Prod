@@ -143,7 +143,7 @@ export default function NavigationLoader() {
     <div
       aria-hidden={!visible}
       role="status"
-      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-white/60 backdrop-blur-[1px] transition-opacity duration-200 ${
+      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-white/60 transition-opacity duration-200 ${
         visible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
       }`}
     >
