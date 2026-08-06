@@ -49,7 +49,7 @@ export default function WishlistButton({
     <button
       onClick={handleClick}
       type="button"
-      className={`focus:outline-none transition-transform active:scale-125 p-1 ${className}`}
+      className={`focus:outline-none p-1 ${className}`}
       aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
     >
       <svg
