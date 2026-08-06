@@ -122,8 +122,8 @@ export default function LandingPageEditor() {
   const formatType = (type: string) => type.split("_").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
 
   return (
-    <Container className="p-8">
-      <div className="flex items-center gap-4 mb-8">
+    <Container className="p-4 lg:p-8">
+      <div className="flex flex-wrap items-center gap-3 mb-8">
         <Link to="/content/landing-pages">
           <Button variant="secondary" size="small">
             <ArrowUturnLeft /> Back

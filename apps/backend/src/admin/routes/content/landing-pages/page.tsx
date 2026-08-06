@@ -19,14 +19,17 @@ const pages = [
 
 export default function LandingPagesPage() {
   return (
-    <Container className="p-8">
+    <Container className="p-4 lg:p-8">
       <div className="flex flex-col gap-4">
         <Heading level="h1">Landing Pages CMS</Heading>
         <Text className="text-ui-fg-subtle">
           Manage the content for your storefront landing pages.
         </Text>
-        
-        <div className="flex gap-4 mt-4">
+
+        {/* flex-wrap so the page buttons wrap onto multiple rows on phone widths
+            instead of overflowing off-screen (Kids/Teen were being clipped).
+            Harmless on desktop, where they already fit on one line. */}
+        <div className="flex flex-wrap gap-3 mt-4">
           {pages.map((page) => (
             <Link key={page.id} to={`/content/landing-pages/${page.id}`}>
               <Button variant="secondary">
