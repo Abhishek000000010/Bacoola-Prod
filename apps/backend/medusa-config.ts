@@ -2,16 +2,44 @@ import { loadEnv, defineConfig } from '@medusajs/framework/utils'
 
 loadEnv(process.env.NODE_ENV || 'development', process.cwd())
 
-// Redis (Upstash) backs the cache, event bus, workflow engine and distributed
-// locks. Without it Medusa silently falls back to in-memory implementations —
-// a "fake redis" cache, a local event bus that drops queued jobs on restart,
-// and in-process locking that cannot protect against double-spend across
-// requests or instances (see docs/WEBSITE-ANALYSIS.md section A1).
+// ============================================================================
+// ⚠️  REDIS IS INTENTIONALLY DISABLED (MVP / pre-launch phase)  ⚠️
+// ----------------------------------------------------------------------------
+// TODO(redis before public launch): flip REDIS_DISABLED back to `false`.
 //
-// The modules are only registered when REDIS_URL is set, so a checkout without
-// Redis credentials still boots (with the in-memory fallbacks + Medusa's usual
-// warnings). Upstash URLs are TLS: rediss://default:<token>@<host>:6379
-const REDIS_URL = process.env.REDIS_URL
+// Why it's off: on the single Render Free instance, Upstash's free command cap
+// was being exhausted in ~2-3 days. The drain was the BullMQ-backed event bus
+// and workflow engine, which poll Redis continuously (blocking reads +
+// heartbeats) even when the store is idle — not the cache. Rather than pay for
+// idle polling during the MVP, we run entirely on Medusa's in-memory fallbacks.
+//
+// What we lose while it's off (acceptable for a demo / low traffic, ONE instance):
+//   • Logins don't survive a restart/redeploy — and Render Free sleeps often,
+//     so users get logged out on every cold start ("fake redis" session store).
+//   • No workflow durability: a restart mid-checkout won't resume the workflow.
+//   • Queued events in flight during a crash are lost (events still fire in-process
+//     normally while the server is up, so e.g. Shiprocket auto-fulfill still works).
+//   • No cross-instance cache/locks — irrelevant while we run a single instance.
+//
+// RE-ENABLE CHECKLIST (do before opening to real customers / scaling past 1 instance):
+//   1. Point REDIS_URL at a NON per-command-metered host (Render Key Value,
+//      Railway, or a small VPS) — Upstash's per-command billing is a bad fit for
+//      BullMQ's constant polling. Upstash TLS URL shape: rediss://default:<token>@<host>:6379
+//   2. Set REDIS_DISABLED = false (or delete the flag and use process.env.REDIS_URL).
+//   3. Verify sessions persist across a redeploy and a checkout survives a restart.
+//   See docs/WEBSITE-ANALYSIS.md section A1 for the original analysis.
+// ============================================================================
+const REDIS_DISABLED = true
+const REDIS_URL = REDIS_DISABLED ? undefined : process.env.REDIS_URL
+
+if (REDIS_DISABLED) {
+  // Nags on every boot/redeploy so this doesn't quietly ship to production.
+  console.warn(
+    "[bacoola] ⚠️  Redis is DISABLED (MVP mode) — using in-memory cache/events/" +
+      "workflows/locks and a non-persistent session store. Re-enable Redis before " +
+      "public launch: see the RE-ENABLE CHECKLIST in medusa-config.ts."
+  )
+}
 
 const redisModules = REDIS_URL
   ? [
