@@ -35,19 +35,44 @@ the server actually resolve.
 
 ## 2. Deployment topology
 
-```
-Repo: https://github.com/Abhishek000000010/Bacoola   (branch: main)
+> ⚠️ **Two stacks exist as of 2026-08-02.** The OLD one below is described for
+> reference; the NEW all-Singapore stack is what is being moved to. Full detail
+> and the remaining steps live in `SINGAPORE-MIGRATION-2026-08-01.md`.
 
-apps/backend/     Medusa v2 + admin  ──deploys to──►  Render
+**NEW — Singapore (deploy from here)**
+
+```
+Repo: https://github.com/Abhishek000000010/Bacoola-Prod   (remote `prod`, branch: main)
+
+apps/backend/     Medusa v2 + admin  ──deploys to──►  Render (Singapore)
+                                                      https://bacoola-prod.onrender.com
+                                                      service srv-d9mrmfijnfac739qcnsg
+
+apps/storefront/  Next.js 15         ──deploys to──►  Render (Singapore)
+                                                      https://bacoola-storefront.onrender.com
+
+Database:         Neon PostgreSQL, Singapore (SHARED — see warning below)
+Redis:            Upstash, Singapore (TLS-only — see "Redis" below)
+```
+
+Both Render services are on the **Free** instance type: 0.1 CPU, 512 MB, spins
+down after ~15 min idle. That is the current performance ceiling — see
+`PERFORMANCE-FIXES-2026-08-02.md` §6.
+
+**OLD — Oregon/Vercel (still up, `origin`, do not deploy to it)**
+
+```
+Repo: https://github.com/Abhishek000000010/Bacoola   (remote `origin`, branch: main)
+
+apps/backend/     Medusa v2 + admin  ──deploys to──►  Render (Oregon)
                                                       https://bacoola.onrender.com
                                                       service srv-d9b6dal8nd3s73a90cfg
 
 apps/storefront/  Next.js 15         ──deploys to──►  Vercel
                                                       https://bacoola-storefront.vercel.app
-
-Database:         Neon PostgreSQL (cloud, SHARED — see warning below)
-Redis:            Upstash (cloud, TLS-only — see "Redis" below)
 ```
+
+⚠️ `git push origin main` deploys to the OLD production. Push to **`prod`**.
 
 ### Redis (Upstash)
 
@@ -79,23 +104,51 @@ production on both services.
 These live in the Render dashboard under **Settings → Build & Deploy**. They are
 **not** in the repo, so they are invisible to `git` and easy to forget.
 
-**Build Command:**
+**Build Command (NEW Singapore service):**
+```
+bash scripts/render-build.sh
+```
+
+That script runs the **same four steps** as the inline command below — the
+invariants in section 3 all still hold — but throttles the `.medusa/server`
+install (`--maxsockets=3 --fetch-retries=10 --prefer-offline`). Without the
+throttle, Render's Singapore build IPs get **npm 429 Too Many Requests**: that
+install has no lockfile, so npm fetches metadata for ~1,900 packages in one
+burst. The old Oregon service's IPs were not rate-limited, which is why the same
+code built fine there. If it 429s again, drop `--maxsockets` to `1`.
+
+**Build Command (OLD Oregon service — the equivalent inline form):**
 ```
 npm install && npm run build -w @dtc/backend && (cd apps/backend/.medusa/server && npm install --legacy-peer-deps) && node scripts/patch-shiprocket-skip-awb.cjs
 ```
 
-**Start Command:**
+**Start Command (both):**
 ```
 cd apps/backend/.medusa/server && npm run start
 ```
 
-Every part of those two lines is load-bearing. Section 3 explains why.
+Every part of those lines is load-bearing. Section 3 explains why.
+
+**Storefront service (Singapore) — Build & Start:**
+```
+npm install && npm run build -w @dtc/storefront
+cd apps/storefront && npx next start -p $PORT
+```
+
+The `-p $PORT` is mandatory: the workspace's `start` script hardcodes
+`next start -p 8000`, and without the override Render's health checks never
+reach it. Root Directory must stay **blank** — both the `-w` build and the root
+`postinstall` patch script resolve from the repo root. Env vars for this service
+are listed in `SINGAPORE-MIGRATION-2026-08-01.md`; note that every
+`NEXT_PUBLIC_*` is inlined at build time, so changing one needs a redeploy, not
+a restart.
 
 Other Render facts:
 - Node version pinned to 20 via the `NODE_VERSION` env var
 - Free instance — **spins down when idle**, so the first request after a quiet
   period can take 50+ seconds. This is not a bug.
-- Build + deploy takes roughly 4-6 minutes end to end.
+- Backend build + deploy takes roughly 4-6 minutes on Oregon; the throttled
+  Singapore build is slower (~30-45 min). The storefront builds in ~4 minutes.
 
 ### ⚠️ The database is shared and is not local
 

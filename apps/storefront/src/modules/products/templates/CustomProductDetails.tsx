@@ -14,6 +14,7 @@ import { parseMeasurements } from "@lib/util/measurements"
 import DetailsPanel from "../components/details-panel"
 import { parseProductDetails } from "@lib/util/product-details"
 import StoreAvailabilityPanel from "../components/store-availability-panel"
+import NotifyRestockPanel from "../components/notify-restock-panel"
 import { STORES } from "@lib/util/stores"
 import { FadeIn } from "@modules/common/components/fade-in"
 interface CustomProductDetailsProps {
@@ -328,6 +329,10 @@ export default function CustomProductDetails({
   // Mobile-only: the size picker is deferred to a bottom sheet that opens on ADD,
   // so the product page itself stays clean (desktop keeps the inline size list).
   const [sizeSheetOpen, setSizeSheetOpen] = useState(false)
+  // The out-of-stock variant a shopper tapped to be notified about (opens the
+  // "notify me when back in stock" panel). Null when the panel is closed.
+  const [notifyVariant, setNotifyVariant] =
+    useState<HttpTypes.StoreProductVariant | null>(null)
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({
     description: true,
     composition: false,
@@ -793,17 +798,42 @@ export default function CustomProductDetails({
                     <div className="flex flex-col w-full text-[12px] lg:text-[14px] font-bold text-neutral-900 border-y border-neutral-200 max-h-[251px] overflow-y-auto hover-scrollbar">
                       {values.map((val) => {
                         const isSelected = currentValue === val
+                        const variant = variantForSize(val)
+                        const outOfStock = !isVariantInStock(variant)
+                        // Out-of-stock size: don't select it (there's nothing to
+                        // add) -- clicking opens the back-in-stock notify panel,
+                        // like the bell affordance on the Mango reference.
                         return (
                           <button
                             key={val}
-                            onClick={() => setOptionValue(option.id, val)}
-                            className={`flex items-center py-2.5 px-2 w-full focus:outline-none transition-colors ${
+                            onClick={() =>
+                              outOfStock
+                                ? variant?.id && setNotifyVariant(variant)
+                                : setOptionValue(option.id, val)
+                            }
+                            title={outOfStock ? "Notify me when back in stock" : undefined}
+                            className={`flex items-center justify-between py-2.5 px-2 w-full focus:outline-none transition-colors ${
                               isSelected
                                 ? "bg-neutral-100 text-black"
+                                : outOfStock
+                                ? "text-neutral-300 hover:bg-neutral-50"
                                 : "text-neutral-900 hover:bg-neutral-100"
                             }`}
                           >
-                            <span className="uppercase">{val}</span>
+                            <span className={`uppercase ${outOfStock ? "line-through decoration-neutral-300" : ""}`}>
+                              {val}
+                            </span>
+                            {outOfStock && (
+                              <svg
+                                aria-hidden="true"
+                                className="w-4 h-4 text-neutral-400 shrink-0"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0a3 3 0 11-6 0m6 0H9" />
+                              </svg>
+                            )}
                           </button>
                         )
                       })}
@@ -852,24 +882,35 @@ export default function CustomProductDetails({
             )}
 
             {/* Add to Bag and Wishlist Action Buttons (desktop: needs a resolved
-                variant up front, since the size list is shown inline). */}
+                variant up front, since the size list is shown inline). When a
+                resolved variant is sold out, the primary button captures an
+                email instead of being a dead "out of stock". */}
             <div className="hidden lg:flex gap-x-[2px] w-full mb-[2px]">
-              <button
-                onClick={handleAddToCart}
-                disabled={
-                  (product.variants?.length ?? 0) > 0 &&
-                  (!isValidVariant || !selectedVariant || !inStock || isAdding)
-                }
-                className="flex-1 py-3 bg-[#181818] text-white text-[12px] lg:text-[14px] font-bold hover:bg-black transition-colors focus:outline-none disabled:bg-neutral-200 disabled:text-neutral-400 disabled:cursor-not-allowed"
-              >
-                {isAdding
-                  ? "ADDING..."
-                  : !selectedVariant && (product.variants?.length ?? 0) > 1
-                  ? "SELECT OPTIONS"
-                  : !inStock
-                  ? "OUT OF STOCK"
-                  : "ADD"}
-              </button>
+              {selectedVariant && isValidVariant && !inStock ? (
+                <button
+                  onClick={() => setNotifyVariant(selectedVariant)}
+                  className="flex-1 py-3 bg-[#181818] text-white text-[12px] lg:text-[14px] font-bold hover:bg-black transition-colors focus:outline-none"
+                >
+                  NOTIFY ME WHEN AVAILABLE
+                </button>
+              ) : (
+                <button
+                  onClick={handleAddToCart}
+                  disabled={
+                    (product.variants?.length ?? 0) > 0 &&
+                    (!isValidVariant || !selectedVariant || !inStock || isAdding)
+                  }
+                  className="flex-1 py-3 bg-[#181818] text-white text-[12px] lg:text-[14px] font-bold hover:bg-black transition-colors focus:outline-none disabled:bg-neutral-200 disabled:text-neutral-400 disabled:cursor-not-allowed"
+                >
+                  {isAdding
+                    ? "ADDING..."
+                    : !selectedVariant && (product.variants?.length ?? 0) > 1
+                    ? "SELECT OPTIONS"
+                    : !inStock
+                    ? "OUT OF STOCK"
+                    : "ADD"}
+                </button>
+              )}
               <WishlistButton
                 product={product}
                 iconClassName="w-[18px] h-[18px] text-white"
@@ -1009,15 +1050,34 @@ export default function CustomProductDetails({
                       <button
                         key={val}
                         type="button"
-                        disabled={outOfStock}
-                        onClick={() => handleSelectSizeAndAdd(val)}
+                        onClick={() => {
+                          if (outOfStock) {
+                            // Sold out: capture an email instead of adding.
+                            const variant = variantForSize(val)
+                            setSizeSheetOpen(false)
+                            if (variant?.id) setNotifyVariant(variant)
+                            return
+                          }
+                          handleSelectSizeAndAdd(val)
+                        }}
                         className={`relative flex h-[68px] flex-col items-start justify-start border-r border-b border-neutral-200 bg-white px-3 py-3 text-[13px] font-bold uppercase transition-colors focus:outline-none ${
                           outOfStock
-                            ? "text-neutral-300 cursor-not-allowed line-through decoration-neutral-300"
+                            ? "text-neutral-300 line-through decoration-neutral-300 active:bg-neutral-50"
                             : "text-neutral-900 active:bg-neutral-100"
                         }`}
                       >
                         <span>{val}</span>
+                        {outOfStock && (
+                          <svg
+                            aria-hidden="true"
+                            className="absolute bottom-2.5 right-2.5 h-3.5 w-3.5 text-neutral-400"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0a3 3 0 11-6 0m6 0H9" />
+                          </svg>
+                        )}
                         {lowStock && (
                           <span
                             aria-hidden="true"
@@ -1041,6 +1101,15 @@ export default function CustomProductDetails({
             </div>
           )
         })()}
+
+      {notifyVariant && (
+        <NotifyRestockPanel
+          variantId={notifyVariant.id}
+          productTitle={product.title}
+          variantTitle={notifyVariant.title ?? undefined}
+          onClose={() => setNotifyVariant(null)}
+        />
+      )}
 
       {storesOpen && <StoreAvailabilityPanel onClose={() => setStoresOpen(false)} />}
 

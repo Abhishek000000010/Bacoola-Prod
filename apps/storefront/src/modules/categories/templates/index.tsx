@@ -54,8 +54,17 @@ export default async function CategoryTemplate({
   }
   getParents(category)
 
-  // Collect category IDs from this category, its descendants, and matching equivalent categories by name
-  const allCategories = await listCategories({ limit: 500 }).catch(() => [])
+  // Collect category IDs from this category, its descendants, and matching equivalent categories by name.
+  //
+  // Only scalars + child ids are needed here (rootOf reads parent_category_id;
+  // the name-match fallback reads name + category_children ids). The default
+  // field set expands each category's parent_category chain into nested objects
+  // -- ~600KB for ~490 categories -- and this fetch runs on every category page,
+  // so ask for the light set instead.
+  const allCategories = await listCategories({
+    limit: 500,
+    fields: "id,name,handle,parent_category_id,category_children.id",
+  }).catch(() => [])
 
   const targetName = category.name?.toLowerCase().trim()
   const allCategoryIds: string[] = []
@@ -70,11 +79,32 @@ export default async function CategoryTemplate({
   }
   collectIds(category)
 
-  // Fallback: match any categories in the store with identical category names (e.g. Sale vs Clothing categories)
+  // Fallback: match categories elsewhere in the SAME section that share this
+  // category's name (e.g. a "T-Shirts" under Clothing and another under Sale),
+  // so their products merge into one listing.
+  //
+  // This MUST stay scoped to the current root section. Section names like
+  // "New Now", "Shoes and Accessories" etc. are identical across Women/Men/
+  // Teen/Kids, so an unscoped name match pulled every section's products into
+  // each section's page (men's products showed up under Women/Teen/Kids New Now).
+  const parentIdOf = new Map<string, string | null>()
+  for (const c of allCategories as any[]) {
+    parentIdOf.set(c.id, c.parent_category_id ?? c.parent_category?.id ?? null)
+  }
+  const rootOf = (id?: string | null): string | undefined => {
+    let current = id ?? undefined
+    let guard = 0
+    while (current && parentIdOf.get(current) && guard++ < 10) {
+      current = parentIdOf.get(current) as string
+    }
+    return current ?? undefined
+  }
+  const currentRoot = rootOf(category.id)
+
   if (targetName && allCategories.length > 0) {
     allCategories.forEach((cat: any) => {
       const catName = cat.name?.toLowerCase().trim()
-      if (catName === targetName) {
+      if (catName === targetName && rootOf(cat.id) === currentRoot) {
         collectIds(cat)
       }
     })

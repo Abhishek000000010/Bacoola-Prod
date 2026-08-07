@@ -200,6 +200,13 @@ module.exports = defineConfig({
       // directly from the Medusa admin. Completely independent of commerce modules.
       resolve: "./src/modules/landing-pages",
     },
+    {
+      // Back-in-stock: stores shopper requests to be emailed when an
+      // out-of-stock variant is restocked. The store API route creates rows and
+      // the restock-notify subscriber sends the emails (see
+      // src/subscribers/restock-notify.ts).
+      resolve: "./src/modules/restock-notification",
+    },
   ],
   plugins: [
     {
