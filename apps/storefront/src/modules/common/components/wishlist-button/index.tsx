@@ -2,32 +2,39 @@
 
 import React, { useState, useEffect } from "react"
 import { HttpTypes } from "@medusajs/types"
-import { isItemInWishlist, toggleWishlistItem } from "@lib/util/wishlist"
+import { VariantCard } from "@lib/util/variant-cards"
+import { isItemInWishlist, toggleWishlistItem, wishlistKey } from "@lib/util/wishlist"
 
 interface WishlistButtonProps {
   product: HttpTypes.StoreProduct
+  /**
+   * The colourway this heart belongs to. Listing tiles pass one per colour so
+   * each heart toggles independently; whole-product buttons omit it.
+   */
+  card?: VariantCard
   className?: string
   iconClassName?: string
 }
 
 export default function WishlistButton({
   product,
+  card,
   className = "",
   iconClassName = "w-4 h-4",
 }: WishlistButtonProps) {
   const [isWishlisted, setIsWishlisted] = useState(false)
+  const key = product?.id ? wishlistKey(product, card) : undefined
 
   useEffect(() => {
-    if (product?.id) {
-      setIsWishlisted(isItemInWishlist(product.id))
-    }
+    if (!key) return
+    setIsWishlisted(isItemInWishlist(key))
 
     const handleWishlistUpdate = (e: Event) => {
       const customEvent = e as CustomEvent
-      if (customEvent.detail?.productId === product?.id) {
+      if (customEvent.detail?.key === key) {
         setIsWishlisted(customEvent.detail.isWishlisted)
-      } else if (product?.id) {
-        setIsWishlisted(isItemInWishlist(product.id))
+      } else {
+        setIsWishlisted(isItemInWishlist(key))
       }
     }
 
@@ -35,13 +42,13 @@ export default function WishlistButton({
     return () => {
       window.removeEventListener("wishlist-updated", handleWishlistUpdate)
     }
-  }, [product?.id])
+  }, [key])
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
     if (!product) return
-    const newState = toggleWishlistItem(product)
+    const newState = toggleWishlistItem(product, card)
     setIsWishlisted(newState)
   }
 

@@ -23,7 +23,7 @@ const PRODUCT_FETCH_TIERS = {
   // the bare product title. Kept to these fields rather than `*variants` so the
   // payload stays close to what it was.
   medium:
-    "id,title,handle,thumbnail,*images,*variants.calculated_price,*options,variants.title,*variants.options,variants.metadata",
+    "id,title,handle,thumbnail,*images,*variants.calculated_price,*options,*options.values,variants.title,*variants.options,variants.metadata",
   // `variants.metadata` carries the admin-curated per-colour image list
   // (`metadata.image_order`) the product gallery reads -- without it the page
   // can't tell which images belong to the selected colourway.
@@ -143,8 +143,14 @@ export const retrievePricedProductById = cache(async ({
     ...(await getAuthHeaders()),
   }
 
+  // Without a revalidate this fetch is cached indefinitely and only busts on a
+  // matching revalidateTag -- which nothing fires on an admin product edit -- so
+  // a price/stock change never reached the detail page (the cart reprices live,
+  // which is why it looked correct there). Mirror the listing's short window so
+  // edits show up within a few minutes.
   const next = {
     ...(await getCacheOptions(["products", id].join("-"))),
+    revalidate: 300,
   }
 
   return sdk.client

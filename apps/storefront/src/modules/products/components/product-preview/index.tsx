@@ -145,7 +145,7 @@ export default function ProductPreview({
                     {title}
                   </Text>
                </div>
-               <WishlistButton product={product} iconClassName="w-[18px] h-[18px]" />
+               <WishlistButton product={product} card={card} iconClassName="w-[18px] h-[18px]" />
             </div>
 
             <div className="mt-1 flex items-center gap-x-2 text-[12px] lg:text-[14px]">
@@ -253,7 +253,7 @@ export default function ProductPreview({
               </div>
            </div>
 
-           <WishlistButton product={product} iconClassName="w-4 h-4" />
+           <WishlistButton product={product} card={card} iconClassName="w-4 h-4" />
         </div>
 
         {/* MOBILE Details Section (Mango Style) */}
@@ -262,7 +262,7 @@ export default function ProductPreview({
               <Text className="pp-m-title text-[12px] lg:text-[14px] text-black leading-snug line-clamp-1" data-testid="product-title">
                 {title}
               </Text>
-              <WishlistButton product={product} iconClassName="pp-m-heart w-4 h-4 flex-shrink-0 text-black" />
+              <WishlistButton product={product} card={card} iconClassName="pp-m-heart w-4 h-4 flex-shrink-0 text-black" />
            </div>
 
            <div className="pp-m-price mt-1 text-[12px] lg:text-[14px] text-black">

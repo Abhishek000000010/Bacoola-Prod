@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { HttpTypes } from "@medusajs/types"
-import { getWishlist } from "@lib/util/wishlist"
+import { getWishlist, WishlistEntry } from "@lib/util/wishlist"
 import ProductPreview from "@modules/products/components/product-preview"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
@@ -15,7 +15,7 @@ export default function WishlistClient({
   region,
   popularProducts,
 }: WishlistClientProps) {
-  const [wishlistItems, setWishlistItems] = useState<HttpTypes.StoreProduct[]>([])
+  const [wishlistItems, setWishlistItems] = useState<WishlistEntry[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
 
   const syncWishlist = () => {
@@ -60,10 +60,11 @@ export default function WishlistClient({
         /* Saved Wishlist Items Grid */
         <div className="w-full px-0 sm:px-8 py-4 max-w-[1550px]">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1 sm:gap-2">
-            {wishlistItems.map((product) => (
+            {wishlistItems.map((entry) => (
               <ProductPreview
-                key={product.id}
-                product={product}
+                key={entry.key}
+                product={entry.product}
+                card={entry.card}
                 region={region}
               />
             ))}
