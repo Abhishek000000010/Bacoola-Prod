@@ -1,6 +1,22 @@
 import "server-only"
 import { cookies as nextCookies } from "next/headers"
 
+/**
+ * `next start` always runs with NODE_ENV=production, so every cookie below is
+ * marked `secure` — meaning the browser stores it only over HTTPS. Served over
+ * plain HTTP they are all silently discarded: `_medusa_cart_id` never survives
+ * the redirect after add-to-cart, `getCartId()` comes back empty, and /cart
+ * renders "Page not found" while the cart is sitting happily on the backend.
+ *
+ * COOKIE_INSECURE=true drops the flag for that window only — a VPS reached on a
+ * bare IP before a domain and TLS exist. DELETE it once HTTPS is in front;
+ * these cookies carry the session JWT and must be secure in real production.
+ * Mirrors the backend switch of the same name in medusa-config.ts.
+ */
+const cookieSecure =
+  process.env.NODE_ENV === "production" &&
+  process.env.COOKIE_INSECURE !== "true"
+
 export const getAuthHeaders = async (): Promise<
   { authorization: string } | Record<string, never>
 > => {
@@ -55,7 +71,7 @@ export const setAuthToken = async (token: string) => {
     maxAge: 60 * 60 * 24 * 7,
     httpOnly: true,
     sameSite: "strict",
-    secure: process.env.NODE_ENV === "production",
+    secure: cookieSecure,
   })
 }
 
@@ -83,7 +99,7 @@ export const setPendingCustomer = async (customer: PendingCustomer) => {
     maxAge: 60 * 60 * 24,
     httpOnly: true,
     sameSite: "strict",
-    secure: process.env.NODE_ENV === "production",
+    secure: cookieSecure,
   })
 }
 
@@ -120,7 +136,7 @@ export const setCartId = async (cartId: string) => {
     maxAge: 60 * 60 * 24 * 7,
     httpOnly: true,
     sameSite: "strict",
-    secure: process.env.NODE_ENV === "production",
+    secure: cookieSecure,
   })
 }
 
