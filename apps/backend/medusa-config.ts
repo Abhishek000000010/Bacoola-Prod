@@ -113,7 +113,24 @@ module.exports = defineConfig({
       cookieSecret: process.env.COOKIE_SECRET,
       // @ts-ignore - Disable secure cookies when testing production build locally via HTTP
       cookieSecure: process.env.NODE_ENV === "production" && !process.env.ADMIN_CORS?.includes("localhost"),
-    }
+    },
+    // ⚠️  `http.cookieSecure` above is DEAD CONFIG — the framework never reads
+    // it. The session cookie's flags come from `resolveSessionCookieSecurity()`
+    // in @medusajs/framework/dist/http/express-loader.js, which forces
+    // `{ sameSite: "lax", secure: true }` whenever NODE_ENV is production or
+    // staging. Over plain HTTP the browser then drops the cookie, `/auth/session`
+    // returns 200, and every following `/admin/users/me` is a 401 — the admin
+    // login "succeeds" and bounces straight back to the login page.
+    //
+    // `projectConfig.cookieOptions` is spread LAST into that cookie object, so
+    // it is the supported way to override the flag.
+    //
+    // Set COOKIE_INSECURE=true ONLY when the server is reached over plain HTTP
+    // (e.g. the VPS on a bare IP, before a domain + TLS exist). DELETE it the
+    // moment HTTPS is in front — secure cookies must be on in real production.
+    ...(process.env.COOKIE_INSECURE === "true"
+      ? { cookieOptions: { secure: false, sameSite: "lax" as const } }
+      : {}),
   },
   modules: [
     ...redisModules,
