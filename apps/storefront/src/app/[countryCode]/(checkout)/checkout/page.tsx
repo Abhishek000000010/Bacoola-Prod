@@ -1,4 +1,4 @@
-import { retrieveCart } from "@lib/data/cart"
+import { retrieveCartWithInventory } from "@lib/data/cart"
 import { retrieveCustomer } from "@lib/data/customer"
 import PaymentWrapper from "@modules/checkout/components/payment-wrapper"
 import CheckoutForm from "@modules/checkout/templates/checkout-form"
@@ -19,7 +19,7 @@ export default async function Checkout(props: {
 }) {
   const searchParams = await props.searchParams
   const [cart, customer] = await Promise.all([
-    retrieveCart(),
+    retrieveCartWithInventory(),
     retrieveCustomer(),
   ])
 

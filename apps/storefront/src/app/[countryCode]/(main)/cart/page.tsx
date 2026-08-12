@@ -1,4 +1,4 @@
-import { retrieveCart } from "@lib/data/cart"
+import { retrieveCartWithInventory } from "@lib/data/cart"
 import { retrieveCustomer } from "@lib/data/customer"
 import { listCartShippingMethods } from "@lib/data/fulfillment"
 import CartTemplate from "@modules/cart/templates"
@@ -16,7 +16,7 @@ export default async function Cart(props: { params: Promise<{ countryCode: strin
   const params = await props.params;
   const { countryCode } = params;
   const [cart, customer, region] = await Promise.all([
-    retrieveCart().catch((error) => {
+    retrieveCartWithInventory().catch((error) => {
       console.error(error)
       return null
     }),

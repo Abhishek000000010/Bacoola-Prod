@@ -4,6 +4,7 @@ import { useActionState, useState, type FormEvent } from "react"
 import { LOGIN_VIEW } from "@modules/account/templates/login-template"
 import ErrorMessage from "@modules/checkout/components/error-message"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import NativeSelect from "@modules/common/components/native-select"
 import { signup } from "@lib/data/customer"
 
 type Props = {
@@ -248,22 +249,19 @@ const Register = ({ setCurrentView }: Props) => {
             errors.phone ? "border-[#b91c1c]" : "border-black focus-within:border-black"
           } transition-colors rounded-none w-full h-[42px]`}
         >
-          <select
+          <NativeSelect
             defaultValue="+91"
-            className="h-full px-3 bg-transparent text-sm border-0 focus:ring-0 focus:outline-none cursor-pointer appearance-none relative text-black"
-            style={{
-              backgroundImage: `url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M7 9l3 3 3-3' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
-              backgroundPosition: 'right 0.25rem center',
-              backgroundSize: '1.25em 1.25em',
-              backgroundRepeat: 'no-repeat',
-              paddingRight: '1.75rem'
-            }}
+            placeholder="+91"
+            aria-label="Country calling code"
+            wrapperClassName="h-full"
+            triggerClassName="h-full cursor-pointer pl-3 pr-7 text-black"
+            listClassName="left-0 w-24"
           >
             <option value="+91">+91</option>
             <option value="+1">+1</option>
             <option value="+44">+44</option>
             <option value="+971">+971</option>
-          </select>
+          </NativeSelect>
           <div className="w-[1px] h-6 bg-neutral-200 self-center" />
           <input
             type="tel"

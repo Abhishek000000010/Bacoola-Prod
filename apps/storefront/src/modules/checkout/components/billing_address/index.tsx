@@ -5,6 +5,7 @@ import React, { useState } from "react"
 import CountrySelect from "../country-select"
 import { useAddressLocations } from "@modules/checkout/hooks/use-address-locations"
 import Select from "react-select"
+import { formSelectStyles } from "@modules/common/components/select-styles"
 
 const BillingAddress = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
   const [stateFocused, setStateFocused] = useState(false)
@@ -116,14 +117,14 @@ const BillingAddress = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
             onBlur={() => setStateFocused(false)}
             isDisabled={!formData["billing_address.country_code"]}
             placeholder=""
-            className="text-sm"
-            styles={{ control: (base: any) => ({ ...base, minHeight: '48px', borderRadius: '0px', borderColor: '#d4d4d4', paddingLeft: '8px' }), valueContainer: (base: any) => ({ ...base, paddingTop: '16px' }), menu: (base: any) => ({ ...base, zIndex: 50 }) }}
+            className="text-[12px] lg:text-[14px]"
+            styles={formSelectStyles}
           />
           <label className={clx(
-            "pointer-events-none absolute left-4 z-10 transition-all duration-300 ease-in-out text-black",
+            "pointer-events-none absolute left-4 z-10 leading-none transition-all duration-300 ease-in-out text-black",
             (stateFocused || formData["billing_address.province"]) 
               ? "top-[7px] text-[12px] lg:text-[14px]" 
-              : "top-1/2 -translate-y-1/2 text-[12px] lg:text-[14px]"
+              : "top-1/2 -translate-y-1/2 text-[12px]"
           )}>State / Province</label>
         </div>
         <div className="relative flex flex-col gap-1">
@@ -137,14 +138,14 @@ const BillingAddress = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
             onBlur={() => setCityFocused(false)}
             isDisabled={!formData["billing_address.province"]}
             placeholder=""
-            className="text-sm"
-            styles={{ control: (base: any) => ({ ...base, minHeight: '48px', borderRadius: '0px', borderColor: '#d4d4d4', paddingLeft: '8px' }), valueContainer: (base: any) => ({ ...base, paddingTop: '16px' }), menu: (base: any) => ({ ...base, zIndex: 50 }) }}
+            className="text-[12px] lg:text-[14px]"
+            styles={formSelectStyles}
           />
           <label className={clx(
-            "pointer-events-none absolute left-4 z-10 transition-all duration-300 ease-in-out text-black",
+            "pointer-events-none absolute left-4 z-10 leading-none transition-all duration-300 ease-in-out text-black",
             (cityFocused || formData["billing_address.city"]) 
               ? "top-[7px] text-[12px] lg:text-[14px]" 
-              : "top-1/2 -translate-y-1/2 text-[12px] lg:text-[14px]"
+              : "top-1/2 -translate-y-1/2 text-[12px]"
           )}>Town / City</label>
         </div>
         {/* Hidden inputs so the react-select State/City values reach FormData

@@ -14,8 +14,14 @@ export const metadata: Metadata = {
 }
 
 export default async function PageLayout(props: { children: React.ReactNode }) {
-  const customer = await retrieveCustomer()
-  const cart = await retrieveCart()
+  // Both are `no-store`, so awaiting them one after the other put two full
+  // round trips on the critical path of every page in this group. They don't
+  // depend on each other; only the shipping options do (they need a cart id).
+  const [customer, cart] = await Promise.all([
+    retrieveCustomer(),
+    retrieveCart(),
+  ])
+
   let shippingOptions: StoreCartShippingOption[] = []
 
   if (cart) {

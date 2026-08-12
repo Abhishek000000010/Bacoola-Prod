@@ -85,6 +85,13 @@ export default function NavigationLoader() {
         return
       const anchor = (e.target as Element | null)?.closest?.("a")
       if (!anchor) return
+      // A click on a control nested inside a card link -- the quick-add "+", a
+      // size chip, the wishlist heart -- isn't a navigation. Those buttons call
+      // preventDefault in their own bubble-phase handler, but this listener runs
+      // first (capture phase), so `e.defaultPrevented` isn't set yet. Bail out
+      // here instead, or the loader flashes on every quick-add tap.
+      const control = (e.target as Element | null)?.closest?.("button")
+      if (control && anchor.contains(control)) return
       const href = anchor.getAttribute("href")
       if (!href || href.startsWith("#")) return
       if (anchor.target && anchor.target !== "_self") return
@@ -143,15 +150,15 @@ export default function NavigationLoader() {
     <div
       aria-hidden={!visible}
       role="status"
-      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-white/60 transition-opacity duration-200 ${
+      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-white transition-opacity duration-200 ${
         visible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
       }`}
     >
       <span className="sr-only">Loading…</span>
       <div className="flex items-center gap-2">
-        <span className="h-2 w-2 rounded-full bg-neutral-800 animate-bounce [animation-delay:-0.3s]" />
-        <span className="h-2 w-2 rounded-full bg-neutral-800 animate-bounce [animation-delay:-0.15s]" />
-        <span className="h-2 w-2 rounded-full bg-neutral-800 animate-bounce" />
+        <span className="h-1.5 w-1.5 rounded-none bg-neutral-800 animate-bounce [animation-delay:-0.3s]" />
+        <span className="h-1.5 w-1.5 rounded-none bg-neutral-800 animate-bounce [animation-delay:-0.15s]" />
+        <span className="h-1.5 w-1.5 rounded-none bg-neutral-800 animate-bounce" />
       </div>
     </div>
   )

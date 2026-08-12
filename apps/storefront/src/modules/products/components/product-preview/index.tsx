@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { useParams } from "next/navigation"
 import { Text } from "@modules/common/components/ui"
 import { getProductPrice } from "@lib/util/get-product-price"
 import { HttpTypes } from "@medusajs/types"
@@ -10,6 +11,7 @@ import PreviewPrice from "./price"
 
 import WishlistButton from "@modules/common/components/wishlist-button"
 import { VariantCard } from "@lib/util/variant-cards"
+import { addToCart } from "@lib/data/cart"
 
 export default function ProductPreview({
   product,
@@ -114,6 +116,88 @@ export default function ProductPreview({
 
   const displayThumbnail = images.length > 0 ? images[currentImageIndex].url : thumbnail
 
+  // Quick-add support. The tile is one <LocalizedClientLink>, so every control
+  // here must swallow the click or a tap would just follow the link to the PDP.
+  // Desktop still reveals the inline size bar on hover; mobile has no hover, so
+  // the "+"/"ADD" open a bottom sheet that slides up from the screen edge, the
+  // same pattern the product page uses.
+  const { countryCode } = (useParams() as { countryCode?: string }) ?? {}
+  const [showSizeSheet, setShowSizeSheet] = useState(false)
+  const [addingSize, setAddingSize] = useState<string | null>(null)
+  const [addedSize, setAddedSize] = useState<string | null>(null)
+
+  const sizeOption = product.options?.find(
+    (o: any) => o.title?.toLowerCase() === "size" || o.title?.toLowerCase() === "sizes"
+  )
+  const sizeValues: string[] = (sizeOption?.values ?? []).map((v: any) => v.value)
+
+  // Resolve a size to the actual variant to add. When this tile is a single
+  // colourway, keep to that colour and only vary the size; otherwise match on
+  // size alone.
+  const resolveVariantForSize = (sizeValue: string): string | undefined => {
+    const variants = (product.variants as any[]) ?? []
+    const match = variants.find((variant) => {
+      const opts: any[] = variant.options ?? []
+      const sizeOk = opts.some(
+        (o) => o.option_id === sizeOption?.id && o.value === sizeValue
+      )
+      if (!sizeOk) return false
+      if (card?.label) {
+        return opts.some((o) => o.value === card.label)
+      }
+      return true
+    })
+    return match?.id
+  }
+
+  // Mobile "+"/"ADD": open the bottom sheet. If there are no size variants there
+  // is nothing to choose, so just add the single/first variant straight away.
+  const openSizeSheet = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (sizeValues.length === 0) {
+      const variantId = card?.variantId ?? (product.variants as any[])?.[0]?.id
+      if (variantId && countryCode) addToCart({ variantId, quantity: 1, countryCode })
+      return
+    }
+    setShowSizeSheet(true)
+  }
+
+  const closeSizeSheet = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setShowSizeSheet(false)
+  }
+
+  // Add a chosen size. `fromSheet` closes the sheet on success; the desktop
+  // hover chips leave it be (there is no sheet there).
+  const addSize = async (
+    e: React.MouseEvent,
+    sizeValue: string,
+    fromSheet: boolean
+  ) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (addingSize || !countryCode) return
+
+    const variantId = resolveVariantForSize(sizeValue)
+    if (!variantId) return
+
+    setAddingSize(sizeValue)
+    try {
+      await addToCart({ variantId, quantity: 1, countryCode })
+      setAddedSize(sizeValue)
+      setTimeout(() => {
+        setAddedSize(null)
+        if (fromSheet) setShowSizeSheet(false)
+      }, fromSheet ? 700 : 1200)
+    } catch (error) {
+      console.error("Error adding to cart:", error)
+    } finally {
+      setAddingSize(null)
+    }
+  }
+
   if (isFeatured) {
     return (
       <LocalizedClientLink href={href} className="group block">
@@ -202,11 +286,24 @@ export default function ProductPreview({
             )}
           </div>
           
-          {/* Sizes Slide Up Bar (Mango Style) */}
-          <div className="absolute bottom-0 left-0 w-full bg-white/90 translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 py-2.5 flex justify-center items-center gap-4 text-[12px] lg:text-[14px] font-medium text-gray-900 tracking-widest uppercase">
-            {product.options?.find((o: any) => o.title?.toLowerCase() === 'size' || o.title?.toLowerCase() === 'sizes')?.values?.map((v: any) => (
-              <span key={v.value} className="nav-underline cursor-pointer px-1">{v.value}</span>
-            )) || (
+          {/* Sizes Slide Up Bar (Mango Style) -- DESKTOP ONLY. Revealed on hover
+              via small:group-hover. Mobile never uses this bar (no hover); the
+              "+"/"ADD" open the bottom sheet instead, so it stays hidden below
+              the `small` breakpoint. */}
+          <div className="hidden small:flex absolute bottom-0 left-0 w-full max-w-full bg-white/90 transition-all duration-300 py-2.5 flex-nowrap justify-center items-center gap-4 text-[12px] lg:text-[14px] font-medium text-gray-900 tracking-widest uppercase translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100">
+            {sizeValues.length > 0 ? (
+              sizeValues.map((size) => (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={(e) => addSize(e, size, false)}
+                  disabled={addingSize !== null}
+                  className="nav-underline cursor-pointer px-1 focus:outline-none disabled:opacity-50"
+                >
+                  {addedSize === size ? "✓" : addingSize === size ? "…" : size}
+                </button>
+              ))
+            ) : (
                <>
                  <span className="nav-underline cursor-pointer px-1">XS</span>
                  <span className="nav-underline cursor-pointer px-1">S</span>
@@ -231,15 +328,25 @@ export default function ProductPreview({
              </button>
           </div>
 
-          {/* Quick-add "+" (mobile only, Mango style) */}
-          <div
-            aria-hidden="true"
-            className="pp-plus small:hidden absolute bottom-2 right-2 z-10 flex h-[26px] w-[26px] items-center justify-center bg-white"
+          {/* Quick-add "+" (mobile only, Mango style). Opens the bottom-sheet
+              size picker rather than following the tile link to the PDP. */}
+          <button
+            type="button"
+            onClick={openSizeSheet}
+            aria-label="Choose a size"
+            className="pp-plus small:hidden absolute bottom-2 right-2 z-20 flex h-[26px] w-[26px] items-center justify-center bg-white focus:outline-none"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="w-[22px] h-[22px] text-black">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1}
+              stroke="currentColor"
+              className="w-[22px] h-[22px] text-black"
+            >
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14" />
             </svg>
-          </div>
+          </button>
         </div>
 
         {/* DESKTOP Details Section (Unchanged) */}
@@ -269,14 +376,67 @@ export default function ProductPreview({
               {displayPrice && <PreviewPrice price={displayPrice} isMobileLayout={true} />}
            </div>
 
-           {/* Add Button (Mango Style) */}
-           <button 
-             className="pp-m-add-btn hidden w-full bg-[#111111] text-white text-[12px] lg:text-[14px] font-bold py-3 mt-1 items-center justify-center transition-colors hover:bg-black"
-             onClick={(e) => e.preventDefault()}
+           {/* Add Button (Mango Style). Single-column layout hides the "+", so
+               this is the size-picker trigger there: it opens the bottom sheet
+               instead of navigating to the PDP. */}
+           <button
+             type="button"
+             onClick={openSizeSheet}
+             className="pp-m-add-btn hidden w-full bg-[#111111] text-white text-[12px] lg:text-[14px] font-bold py-3 mt-1 items-center justify-center transition-colors hover:bg-black focus:outline-none"
            >
              ADD
            </button>
         </div>
+
+        {/* Bottom-sheet size picker (mobile only), mirroring the product page.
+            Fixed to the viewport so it slides up from the bottom of the screen,
+            not from inside the card. */}
+        {showSizeSheet && sizeValues.length > 0 && (
+          <div className="fixed inset-0 z-[200] small:hidden" onClick={closeSizeSheet}>
+            <div className="absolute inset-0 bg-black/25" aria-hidden="true" />
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Choose your size"
+              onClick={(e) => e.stopPropagation()}
+              className="absolute inset-x-0 bottom-0 flex max-h-[85vh] flex-col bg-white shadow-[0_-8px_32px_rgba(0,0,0,0.12)] animate-[ppSizeSheetUp_0.32s_cubic-bezier(0.32,0.72,0,1)]"
+            >
+              <style>{`@keyframes ppSizeSheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}`}</style>
+
+              <header className="flex shrink-0 items-center justify-between gap-x-4 px-5 pt-6 pb-4">
+                <h2 className="text-[13px] font-bold uppercase tracking-[0.02em] text-neutral-900">
+                  Choose your size
+                </h2>
+                <button
+                  type="button"
+                  onClick={closeSizeSheet}
+                  aria-label="Close"
+                  className="flex h-6 w-6 items-center justify-center text-neutral-900 transition-colors hover:text-neutral-500 focus:outline-none"
+                >
+                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path strokeLinecap="round" strokeWidth="1.5" d="M6 6l12 12M18 6L6 18" />
+                  </svg>
+                </button>
+              </header>
+
+              <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8">
+                <div className="grid grid-cols-4 border-t border-l border-neutral-200">
+                  {sizeValues.map((size) => (
+                    <button
+                      key={size}
+                      type="button"
+                      onClick={(e) => addSize(e, size, true)}
+                      disabled={addingSize !== null}
+                      className="relative flex h-[68px] items-start justify-start border-r border-b border-neutral-200 bg-white px-3 py-3 text-[13px] font-bold uppercase text-neutral-900 transition-colors active:bg-neutral-100 focus:outline-none disabled:opacity-50"
+                    >
+                      {addedSize === size ? "✓" : addingSize === size ? "…" : size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </LocalizedClientLink>
   )

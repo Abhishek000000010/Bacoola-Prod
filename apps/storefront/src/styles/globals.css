@@ -26,6 +26,15 @@ body {
   font-weight: 400;
 }
 
+/* Kill the grey/blue box mobile browsers flash over a control the moment it's
+   tapped. Without this, tapping a nav category tab leaves a rectangle outline
+   (reads as two vertical lines flanking the label) that fades out a beat later. */
+button,
+a,
+[role="button"] {
+  -webkit-tap-highlight-color: transparent;
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
 }
@@ -49,6 +58,18 @@ button.transition-opacity,
 @keyframes shimmer {
   100% {
     transform: translateX(100%);
+  }
+}
+
+/* react-select menus open with the same slide as NativeSelect's dropdown. */
+@keyframes select-slide-down {
+  from {
+    max-height: 0;
+    opacity: 0;
+  }
+  to {
+    max-height: 240px;
+    opacity: 1;
   }
 }
 

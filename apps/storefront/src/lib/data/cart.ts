@@ -5,6 +5,7 @@ import medusaError from "@lib/util/medusa-error"
 import { HttpTypes } from "@medusajs/types"
 import { revalidateTag } from "next/cache"
 import { redirect } from "next/navigation"
+import { cache } from "react"
 import {
   getAuthHeaders,
   getCacheOptions,
@@ -20,8 +21,20 @@ import { getLocale } from "./locale-actions"
  * Retrieves a cart by its ID. If no ID is provided, it will use the cart ID from the cookies.
  * @param cartId - optional - The ID of the cart to retrieve.
  * @returns The cart object if found, or null if not found.
+ *
+ * Memoised for the duration of one render. The cart is `no-store`, so before
+ * this every caller in a single page render paid its own round trip -- and the
+ * `(main)` layout and the nav's CartButton both call it on EVERY page, which
+ * doubled the cost of the one request no page can skip.
+ *
+ * Does NOT fill in `variant.inventory_quantity`; that needs a second request
+ * and only the cart/checkout item rows read it. Use `retrieveCartWithInventory`
+ * there instead of paying for it site-wide.
  */
-export async function retrieveCart(cartId?: string, fields?: string) {
+export const retrieveCart = cache(async function retrieveCart(
+  cartId?: string,
+  fields?: string
+) {
   const id = cartId || (await getCartId())
   fields ??=
     "*items, *region, *items.product, *items.variant, *items.thumbnail, *items.metadata, +items.total, *promotions, +shipping_methods.name"
@@ -38,7 +51,7 @@ export async function retrieveCart(cartId?: string, fields?: string) {
   const headers = { ...authHeaders }
   const next = { ...cacheOpts }
 
-  const cart = await sdk.client
+  return await sdk.client
     .fetch<HttpTypes.StoreCartResponse>(`/store/carts/${id}`, {
       method: "GET",
       query: {
@@ -50,9 +63,24 @@ export async function retrieveCart(cartId?: string, fields?: string) {
     })
     .then(({ cart }: { cart: HttpTypes.StoreCart }) => cart)
     .catch(() => null)
+})
 
-  return cart ? await withVariantInventory(cart, headers) : cart
-}
+/**
+ * The cart with real stock numbers on each line item, for the pages that show
+ * them (cart, checkout). Enriches the memoised cart in place, so callers of
+ * `retrieveCart` in the same render see the numbers too without a second fetch.
+ */
+export const retrieveCartWithInventory = cache(
+  async function retrieveCartWithInventory() {
+    const cart = await retrieveCart()
+
+    if (!cart) {
+      return cart
+    }
+
+    return await withVariantInventory(cart, { ...(await getAuthHeaders()) })
+  }
+)
 
 /**
  * Fills in `variant.inventory_quantity` on every line item.

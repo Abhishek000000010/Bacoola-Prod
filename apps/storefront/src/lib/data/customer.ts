@@ -6,6 +6,7 @@ import { HttpTypes } from "@medusajs/types"
 import { FetchError } from "@medusajs/js-sdk"
 import { revalidateTag } from "next/cache"
 import { redirect } from "next/navigation"
+import { cache } from "react"
 import {
   getAuthHeaders,
   getCacheOptions,
@@ -40,7 +41,9 @@ async function requestVerificationEmail(email: string, token: string) {
   )
 }
 
-export const retrieveCustomer =
+// Memoised per render: `no-store`, and both the `(main)` layout and the nav
+// call it on every page, so without this each page paid the round trip twice.
+export const retrieveCustomer = cache(
   async (): Promise<HttpTypes.StoreCustomer | null> => {
     const [authHeaders, cacheOpts] = await Promise.all([
       getAuthHeaders(),
@@ -64,6 +67,7 @@ export const retrieveCustomer =
       .then(({ customer }: any) => customer)
       .catch(() => null)
   }
+)
 
 export const updateCustomer = async (body: HttpTypes.StoreUpdateCustomer) => {
   const headers = {

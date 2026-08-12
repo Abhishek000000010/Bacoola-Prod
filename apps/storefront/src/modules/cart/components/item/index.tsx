@@ -69,7 +69,9 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
   }
 
   // `inventory_quantity` is absent from the raw cart response and is filled in
-  // by retrieveCart. If it is still missing the stock is genuinely unknown, so
+  // by retrieveCartWithInventory (which the cart and checkout pages use in
+  // place of retrieveCart). If it is still missing the stock is genuinely
+  // unknown, so
   // hold the line at the current quantity rather than assuming a default --
   // guessing high is what allowed 10 of a 6-stock variant into the cart.
   const stock = item.variant?.inventory_quantity

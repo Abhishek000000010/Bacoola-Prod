@@ -9,6 +9,7 @@ import AddressSelect from "../address-select"
 import CountrySelect from "../country-select"
 import { useAddressLocations } from "@modules/checkout/hooks/use-address-locations"
 import Select from "react-select"
+import { formSelectStyles } from "@modules/common/components/select-styles"
 
 const ShippingAddress = ({
   customer,
@@ -250,14 +251,14 @@ const ShippingAddress = ({
             onBlur={() => setStateFocused(false)}
             isDisabled={!formData["shipping_address.country_code"]}
             placeholder=""
-            className="text-sm"
-            styles={{ control: (base: any) => ({ ...base, minHeight: '48px', borderRadius: '0px', borderColor: '#d4d4d4', paddingLeft: '8px' }), valueContainer: (base: any) => ({ ...base, paddingTop: '16px' }), menu: (base: any) => ({ ...base, zIndex: 50 }) }}
+            className="text-[12px] lg:text-[14px]"
+            styles={formSelectStyles}
           />
           <label className={clx(
-            "pointer-events-none absolute left-4 z-10 transition-all duration-300 ease-in-out text-black",
+            "pointer-events-none absolute left-4 z-10 leading-none transition-all duration-300 ease-in-out text-black",
             (stateFocused || formData["shipping_address.province"]) 
               ? "top-[7px] text-[12px] lg:text-[14px]" 
-              : "top-1/2 -translate-y-1/2 text-[12px] lg:text-[14px]"
+              : "top-1/2 -translate-y-1/2 text-[12px]"
           )}>State / Province</label>
         </div>
         <div className="relative flex flex-col gap-1">
@@ -271,14 +272,14 @@ const ShippingAddress = ({
             onBlur={() => setCityFocused(false)}
             isDisabled={!formData["shipping_address.province"]}
             placeholder=""
-            className="text-sm"
-            styles={{ control: (base: any) => ({ ...base, minHeight: '48px', borderRadius: '0px', borderColor: '#d4d4d4', paddingLeft: '8px' }), valueContainer: (base: any) => ({ ...base, paddingTop: '16px' }), menu: (base: any) => ({ ...base, zIndex: 50 }) }}
+            className="text-[12px] lg:text-[14px]"
+            styles={formSelectStyles}
           />
           <label className={clx(
-            "pointer-events-none absolute left-4 z-10 transition-all duration-300 ease-in-out text-black",
+            "pointer-events-none absolute left-4 z-10 leading-none transition-all duration-300 ease-in-out text-black",
             (cityFocused || formData["shipping_address.city"]) 
               ? "top-[7px] text-[12px] lg:text-[14px]" 
-              : "top-1/2 -translate-y-1/2 text-[12px] lg:text-[14px]"
+              : "top-1/2 -translate-y-1/2 text-[12px]"
           )}>Town / City</label>
         </div>
       </div>

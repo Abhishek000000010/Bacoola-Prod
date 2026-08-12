@@ -48,6 +48,16 @@ export default function CategoryProductListing({
   )
   const [cols, setCols] = useState<2 | 4 | 6>(4)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
+
+  // Phones default to the single-column ("first") layout; the 4-up desktop
+  // default is left as-is. Starting at 4 keeps the server markup and the first
+  // client render identical (no hydration mismatch), then this nudges phones to
+  // one-per-row on mount. Guarded to < 640px so desktop and tablet are untouched.
+  useEffect(() => {
+    if (window.matchMedia("(max-width: 639px)").matches) {
+      setCols(2)
+    }
+  }, [])
   const [facetData, setFacetData] = useState<{
     facetIndex: FacetIndex
     facets: CardFacet[]
