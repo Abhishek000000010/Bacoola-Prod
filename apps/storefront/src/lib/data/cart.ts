@@ -144,6 +144,23 @@ async function withVariantInventory(
     }
   }
 
+  // A line item that comes out of here without a stock number makes the cart's
+  // quantity control fall back to a blind cap, so say why rather than failing
+  // quietly. The three values distinguish the three ways this goes wrong:
+  // no product ids on the cart's variants, an empty or mismatched products
+  // response, or a variant the response simply didn't include.
+  const unresolved = (cart.items ?? [])
+    .filter((item: any) => typeof item.variant?.inventory_quantity !== "number")
+    .map((item: any) => item.variant?.id ?? `no-variant(${item.id})`)
+
+  if (unresolved.length) {
+    console.warn(
+      `[cart] no inventory resolved for ${unresolved.length} line item(s): ` +
+        `${unresolved.join(", ")} | productIds=${productIds.length} ` +
+        `[${productIds.join(", ")}] | stockEntries=${stockByVariant.size}`
+    )
+  }
+
   return cart
 }
 

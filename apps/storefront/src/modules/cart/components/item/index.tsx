@@ -70,10 +70,18 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
 
   // `inventory_quantity` is absent from the raw cart response and is filled in
   // by retrieveCartWithInventory (which the cart and checkout pages use in
-  // place of retrieveCart). If it is still missing the stock is genuinely
-  // unknown, so
-  // hold the line at the current quantity rather than assuming a default --
-  // guessing high is what allowed 10 of a 6-stock variant into the cart.
+  // place of retrieveCart).
+  //
+  // When it is still missing we cap at UNKNOWN_STOCK_CAP rather than at
+  // `item.quantity`. Capping at the current quantity looked safer but was a
+  // trap: `quantity >= maxQuantity` is then permanently true, so "+" disables
+  // itself forever, and decrementing drags the cap down with it — the customer
+  // can never increase the line again, whatever the real stock is.
+  //
+  // Failing closed like that buys very little: the server-side check at
+  // place-order is what actually blocks an oversell, and it runs regardless.
+  const UNKNOWN_STOCK_CAP = 10
+
   const stock = item.variant?.inventory_quantity
   const managed = item.variant?.manage_inventory
 
@@ -81,7 +89,7 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
     ? 100
     : typeof stock === "number"
     ? stock
-    : item.quantity
+    : UNKNOWN_STOCK_CAP
 
   const atMax = item.quantity >= maxQuantity
 
