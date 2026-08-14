@@ -259,3 +259,44 @@ export function buildAdminOrderEmail(order: OrderLike): { subject: string; html:
     html: shell("New order notification", inner),
   }
 }
+
+/**
+ * Admin password-reset email.
+ *
+ * The link carries a single-use JWT that Medusa mints with a 15-minute TTL
+ * (RESET_PASSWORD_TOKEN_TTL_SECONDS in @medusajs/core-flows). The admin's
+ * reset page decodes the account out of the token itself, so the address is
+ * deliberately NOT in the URL — one less thing leaking through browser history,
+ * referrers or shoulder-surfing.
+ */
+export function buildAdminPasswordResetEmail(input: {
+  resetUrl: string
+  expiresInMinutes: number
+}): { subject: string; html: string } {
+  const inner = `
+    <h1 style="font-size:20px;margin:0 0 12px">Reset your admin password</h1>
+    <p style="font-size:14px;color:#555;margin:0 0 20px">
+      Someone asked to reset the password for your ${esc(BRAND)} admin account.
+      Click below to choose a new one.
+    </p>
+    <p style="margin:0 0 24px">
+      <a href="${esc(input.resetUrl)}"
+         style="display:inline-block;background:#111;color:#fff;text-decoration:none;padding:12px 22px;border-radius:4px;font-size:14px;font-weight:700">
+        Set a new password
+      </a>
+    </p>
+    <p style="font-size:13px;color:#777;margin:0 0 8px">
+      This link expires in ${input.expiresInMinutes} minutes and can only be used once.
+    </p>
+    <p style="font-size:13px;color:#777;margin:0 0 20px">
+      If you didn't ask for this, ignore this email — your password stays as it is.
+    </p>
+    <p style="font-size:12px;color:#aaa;margin:0;word-break:break-all">
+      If the button doesn't work, paste this into your browser:<br>${esc(input.resetUrl)}
+    </p>
+  `
+  return {
+    subject: `${BRAND} — reset your admin password`,
+    html: shell("Password reset", inner),
+  }
+}
