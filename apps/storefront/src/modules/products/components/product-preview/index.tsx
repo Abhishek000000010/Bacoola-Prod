@@ -13,6 +13,22 @@ import WishlistButton from "@modules/common/components/wishlist-button"
 import { VariantCard } from "@lib/util/variant-cards"
 import { addToCart } from "@lib/data/cart"
 
+/**
+ * Typography for the size row that slides up over a card on hover.
+ *
+ * Shared by both card layouts below. They previously carried their own copies
+ * that had drifted apart -- one `font-bold text-gray-800` with no letter
+ * spacing, the other `font-medium text-gray-900 tracking-widest uppercase` --
+ * so the same sizes rendered differently depending on which layout a tile used.
+ * Which sizes appear still varies per product; how they look must not.
+ */
+const SIZE_ROW_TYPOGRAPHY =
+  "text-[12px] lg:text-[14px] font-medium text-gray-900 tracking-widest uppercase"
+
+/** One size label inside that row. */
+const SIZE_CHIP =
+  "nav-underline cursor-pointer px-1 focus:outline-none disabled:opacity-50"
+
 export default function ProductPreview({
   product,
   isFeatured,
@@ -211,9 +227,9 @@ export default function ProductPreview({
               isFeatured={isFeatured}
             />
             {/* Sizes Slide Up Bar */}
-            <div className="absolute bottom-0 left-0 w-full bg-white/95 backdrop-blur-sm translate-y-full opacity-0 group-hover/image:translate-y-0 group-hover/image:opacity-100 transition-all duration-300 py-3 flex justify-center items-center gap-4 text-xs lg:text-sm font-bold text-gray-800">
+            <div className={`absolute bottom-0 left-0 w-full bg-white/95 backdrop-blur-sm translate-y-full opacity-0 group-hover/image:translate-y-0 group-hover/image:opacity-100 transition-all duration-300 py-3 flex justify-center items-center gap-4 ${SIZE_ROW_TYPOGRAPHY}`}>
               {product.options?.find((o: any) => o.title?.toLowerCase() === 'size' || o.title?.toLowerCase() === 'sizes')?.values?.map((v: any) => (
-                <span key={v.value} className="nav-underline cursor-pointer">{v.value}</span>
+                <span key={v.value} className={SIZE_CHIP}>{v.value}</span>
               )) || (
                  <span className="nav-underline cursor-pointer tracking-wider uppercase text-[12px] lg:text-[14px] text-gray-500">View Details</span>
               )}
@@ -290,7 +306,7 @@ export default function ProductPreview({
               via small:group-hover. Mobile never uses this bar (no hover); the
               "+"/"ADD" open the bottom sheet instead, so it stays hidden below
               the `small` breakpoint. */}
-          <div className="hidden small:flex absolute bottom-0 left-0 w-full max-w-full bg-white/90 transition-all duration-300 py-2.5 flex-nowrap justify-center items-center gap-4 text-[12px] lg:text-[14px] font-medium text-gray-900 tracking-widest uppercase translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100">
+          <div className={`hidden small:flex absolute bottom-0 left-0 w-full max-w-full bg-white/90 transition-all duration-300 py-2.5 flex-nowrap justify-center items-center gap-4 translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 ${SIZE_ROW_TYPOGRAPHY}`}>
             {sizeValues.length > 0 ? (
               sizeValues.map((size) => (
                 <button
@@ -298,18 +314,18 @@ export default function ProductPreview({
                   type="button"
                   onClick={(e) => addSize(e, size, false)}
                   disabled={addingSize !== null}
-                  className="nav-underline cursor-pointer px-1 focus:outline-none disabled:opacity-50"
+                  className={SIZE_CHIP}
                 >
                   {addedSize === size ? "✓" : addingSize === size ? "…" : size}
                 </button>
               ))
             ) : (
                <>
-                 <span className="nav-underline cursor-pointer px-1">XS</span>
-                 <span className="nav-underline cursor-pointer px-1">S</span>
-                 <span className="nav-underline cursor-pointer px-1">M</span>
-                 <span className="nav-underline cursor-pointer px-1">L</span>
-                 <span className="nav-underline cursor-pointer px-1">XL</span>
+                 <span className={SIZE_CHIP}>XS</span>
+                 <span className={SIZE_CHIP}>S</span>
+                 <span className={SIZE_CHIP}>M</span>
+                 <span className={SIZE_CHIP}>L</span>
+                 <span className={SIZE_CHIP}>XL</span>
                </>
             )}
           </div>
