@@ -8,7 +8,7 @@ export default function Footer() {
   const pathname = usePathname()
   const isAccountPage = pathname?.includes("/account")
   const footerLinkClass =
-    "text-[12px] font-bold uppercase tracking-[0.05em] text-neutral-950 transition-colors hover:text-neutral-500"
+    "nav-underline text-[12px] font-bold uppercase tracking-[0.05em] text-neutral-950"
 
   return (
     <footer className="w-full bg-white font-sans tracking-wide text-neutral-800">
@@ -114,7 +114,7 @@ export default function Footer() {
             Company
           </LocalizedClientLink>
           <LocalizedClientLink href="/careers" className={footerLinkClass}>
-            Work for Mango
+            Work for Bacoola
           </LocalizedClientLink>
           <LocalizedClientLink href="/press" className={footerLinkClass}>
             Press
@@ -123,7 +123,7 @@ export default function Footer() {
 
         <div className="flex flex-col items-start gap-y-5">
           <LocalizedClientLink href="/outlet" className={footerLinkClass}>
-            Mango Outlet
+            Bacoola Outlet
           </LocalizedClientLink>
           <LocalizedClientLink href="/sitemap" className={footerLinkClass}>
             Site Map
@@ -134,9 +134,6 @@ export default function Footer() {
         </div>
 
         <div className="flex flex-col items-start gap-y-5">
-          <LocalizedClientLink href="/gift-voucher" className={footerLinkClass}>
-            Gift Voucher
-          </LocalizedClientLink>
           <LocalizedClientLink href="/stores" className={footerLinkClass}>
             Stores
           </LocalizedClientLink>
@@ -158,7 +155,7 @@ export default function Footer() {
           </div>
 
           <div className="select-none text-center text-[12px] font-bold tracking-[0.01em] text-neutral-950 md:ml-auto md:text-right">
-            © {new Date().getFullYear()} MANGO All rights reserved
+            © {new Date().getFullYear()} BACOOLA All rights reserved
           </div>
         </div>
       </div>
