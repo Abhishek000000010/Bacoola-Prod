@@ -408,16 +408,22 @@ everything returns after a reboot.
 
 ## 10. What is left
 
-### 10.1 Turn Redis back on
+### 10.1 ~~Turn Redis back on~~ — done 2026-08-14
 
-The container runs and is correctly capped, but the app ignores it:
-`apps/backend/medusa-config.ts` has a hardcoded `const REDIS_DISABLED = true`.
-It was switched off to stop Upstash's **per-command billing quota** draining —
-a limit that does not exist on self-hosted Redis. Flip the flag, rebuild the
-backend, confirm the "fake redis" warnings disappear.
+The hardcoded `REDIS_DISABLED` flag is gone; Redis is now driven purely by
+`REDIS_URL`, which points at the container on this VPS. It had been switched off
+to stop Upstash's **per-command billing quota** draining — a limit that does not
+exist on self-hosted Redis, where BullMQ can poll all it likes for free.
 
-Until then the backend uses in-memory cache/events/locks and a non-persistent
-session store: logins drop on restart and queued jobs are lost.
+Verify after any backend rebuild that these are **absent** from the logs:
+
+```bash
+docker logs bacoola-backend 2>&1 | grep -iE "fake redis|Redis is DISABLED|Local Event Bus"
+```
+
+Empty output is correct. Anything there means the backend fell back to
+in-memory cache/events/locks and a non-persistent session store — logins drop on
+restart and queued jobs are lost.
 
 ### 10.2 Backups — partially done
 
