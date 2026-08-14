@@ -41,6 +41,3 @@ services:
       - "www.bacoola.com:host-gateway"
     ports:
       - "127.0.0.1:8000:8000"
-      # Temporary fallback on a non-standard port, kept while DNS settled.
-      # Safe to remove once https://bacoola.com is confirmed everywhere.
-      - "8080:8000"
