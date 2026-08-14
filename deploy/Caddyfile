@@ -1,0 +1,26 @@
+# Reverse proxy + automatic HTTPS for Bacoola.
+#
+# Reference copy — the live file is /etc/caddy/Caddyfile on the VPS.
+# Apply changes with:  systemctl reload caddy
+#
+# Caddy obtains and renews Let's Encrypt certificates on its own; there is
+# nothing to configure and nothing that expires. It listens on 80 and 443 and
+# redirects HTTP to HTTPS automatically.
+#
+# Serving over HTTPS is not cosmetic here — two real bugs traced back to plain
+# HTTP, because browsers silently discard `secure` cookies over http://:
+#   - admin login looped forever (session cookie dropped)
+#   - the cart 404'd after add-to-bag (_medusa_cart_id dropped)
+# See docs/HOSTINGER-VPS-DEPLOYMENT.md §6.
+#
+# It also fixes mobile access: Indian mobile carriers transparently proxy port
+# 80 and drop requests to a bare IP, so the site was unreachable on mobile data
+# until TLS was in front.
+
+bacoola.com, www.bacoola.com {
+	reverse_proxy 127.0.0.1:8000
+}
+
+api.bacoola.com {
+	reverse_proxy 127.0.0.1:9000
+}

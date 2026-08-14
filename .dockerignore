@@ -1,0 +1,20 @@
+# Keep the build context small and reproducible.
+#
+# node_modules and generated output are excluded so the image always builds
+# from source rather than inheriting whatever happens to be on the host.
+# apps/storefront/.env.local is deliberately NOT ignored — the storefront build
+# needs it (see Dockerfile.storefront).
+
+.git
+node_modules
+**/node_modules
+**/.next
+**/.medusa
+**/dist
+**/build
+
+# Large files that have no business in an image
+*.mp4
+backups
+lighthouse-report.json
+root_dev.log

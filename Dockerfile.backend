@@ -1,0 +1,50 @@
+# Bacoola backend (Medusa v2 + admin) — production image.
+#
+# This mirrors scripts/render-build.sh step for step, because all three
+# invariants in docs/DEPLOYMENT.md §3 are load-bearing and each one has caused a
+# real outage when broken:
+#
+#   3.1  `medusa start` MUST run from apps/backend/.medusa/server, or the admin
+#        dashboard is served from a directory the build never writes to.
+#   3.2  That directory gets its own node_modules, so the Shiprocket patch has
+#        to run AFTER both installs — a postinstall hook is not enough, and
+#        without it orders silently stop reaching Shiprocket.
+#   3.3  --legacy-peer-deps is required for the .medusa/server install; it has
+#        no lockfile and npm resolves strictly from scratch.
+#
+# The npm throttling flags exist because the .medusa/server install fetches
+# metadata for ~1,900 packages in one burst and some build networks answer with
+# HTTP 429. Harmless when not needed.
+#
+# Build:  docker build -f Dockerfile.backend -t bacoola-backend .
+# Deploy: see docs/HOSTINGER-VPS-DEPLOYMENT.md §7
+
+FROM node:20-bookworm-slim
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends python3 make g++ ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY . .
+
+RUN npm install
+RUN npm run build -w @dtc/backend
+RUN cd apps/backend/.medusa/server && npm install --legacy-peer-deps \
+      --maxsockets=3 \
+      --fetch-retries=10 \
+      --fetch-retry-mintimeout=20000 \
+      --fetch-retry-maxtimeout=120000 \
+      --prefer-offline \
+      --no-audit \
+      --no-fund
+
+# Must come after BOTH installs — see invariant 3.2 above.
+RUN node scripts/patch-shiprocket-skip-awb.cjs
+
+# Invariant 3.1: the server's working directory IS .medusa/server.
+WORKDIR /app/apps/backend/.medusa/server
+
+ENV NODE_ENV=production
+EXPOSE 9000
+CMD ["npm", "run", "start"]

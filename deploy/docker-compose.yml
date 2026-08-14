@@ -1,0 +1,50 @@
+# Data services for the Bacoola VPS deployment.
+#
+# Reference copy — the live file is /opt/bacoola/docker-compose.yml on the
+# server. Keep the two in sync by hand; nothing automates it.
+#
+# POSTGRES_PASSWORD comes from /opt/bacoola/.env (mode 600, generated on the
+# server with `openssl rand -hex 16`). It is never committed.
+#
+# Both services bind to 127.0.0.1 ONLY. That loopback binding — not ufw — is
+# what keeps them off the public internet: Docker publishes ports by writing
+# iptables rules directly, which bypass ufw entirely.
+
+services:
+  postgres:
+    # ⚠️ Postgres 18 stores data in a major-version subdirectory and expects the
+    # volume at /var/lib/postgresql, NOT the traditional .../data. With the old
+    # path the container crash-loops complaining about pg_ctlcluster layout.
+    image: postgres:18
+    container_name: bacoola-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: bacoola
+      POSTGRES_USER: bacoola
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bacoola -d bacoola"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    # Capped so it can never starve a 3.8 GB box. volatile-lru discards
+    # expiring cache entries first rather than rejecting writes — the opposite
+    # of the Upstash quota exhaustion that broke add-to-cart previously.
+    image: redis:7-alpine
+    container_name: bacoola-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "512mb", "--maxmemory-policy", "volatile-lru"]
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redisdata:/data
+
+volumes:
+  pgdata:
+  redisdata:

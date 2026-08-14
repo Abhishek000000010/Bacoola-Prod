@@ -1,0 +1,46 @@
+# Application services for the Bacoola VPS deployment.
+#
+# Reference copy — the live file is /opt/bacoola/docker-compose.override.yml.
+#
+# Both apps bind to 127.0.0.1 only; Caddy (on the host) is the sole public
+# listener and terminates TLS. See deploy/Caddyfile.
+#
+# Images are built from the Dockerfiles at the repo root:
+#   docker build -f Dockerfile.backend    -t bacoola-backend .
+#   docker build -f Dockerfile.storefront -t bacoola-storefront .
+
+services:
+  backend:
+    image: bacoola-backend
+    container_name: bacoola-backend
+    restart: unless-stopped
+    env_file: ./backend.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:9000:9000"
+
+  storefront:
+    image: bacoola-storefront
+    container_name: bacoola-storefront
+    restart: unless-stopped
+    env_file: ./storefront.env
+    depends_on:
+      - backend
+    # The storefront calls the backend at its PUBLIC url (NEXT_PUBLIC_* values
+    # are shared with the browser, so they can't be container hostnames). Docker
+    # containers could not resolve those names — every SSR fetch died with
+    # ENOTFOUND and the site returned 500 on every page.
+    #
+    # host-gateway maps them to the host, so the traffic reaches Caddy locally
+    # instead of going out to the internet and back.
+    extra_hosts:
+      - "api.bacoola.com:host-gateway"
+      - "bacoola.com:host-gateway"
+      - "www.bacoola.com:host-gateway"
+    ports:
+      - "127.0.0.1:8000:8000"
+      # Temporary fallback on a non-standard port, kept while DNS settled.
+      # Safe to remove once https://bacoola.com is confirmed everywhere.
+      - "8080:8000"

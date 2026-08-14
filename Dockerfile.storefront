@@ -1,0 +1,36 @@
+# Bacoola storefront (Next.js 15) — production image.
+#
+# ⚠️  apps/storefront/.env.local MUST exist in the build context before this
+# runs. Every NEXT_PUBLIC_* value is inlined at compile time, so it cannot be
+# supplied at runtime — changing one needs a rebuild, not a restart. On the VPS
+# that file is a copy of /opt/bacoola/storefront.env; see
+# docs/HOSTINGER-VPS-DEPLOYMENT.md §4.4.
+#
+# Do NOT set NODE_ENV here. `next start` sets it to production itself, and
+# setting it during install makes npm skip devDependencies — next, typescript,
+# tailwindcss and autoprefixer all live there, so the build dies on a missing
+# binary.
+#
+# The port override matters: the workspace's own `start` script hardcodes
+# `next start -p 8000`, which is fine here, but any host assigning its own port
+# must override the command.
+#
+# Build:  docker build -f Dockerfile.storefront -t bacoola-storefront .
+# Deploy: see docs/HOSTINGER-VPS-DEPLOYMENT.md §7
+
+FROM node:20-bookworm-slim
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends python3 make g++ ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY . .
+
+RUN npm install
+RUN npm run build -w @dtc/storefront
+
+WORKDIR /app/apps/storefront
+
+EXPOSE 8000
+CMD ["npx", "next", "start", "-p", "8000"]
