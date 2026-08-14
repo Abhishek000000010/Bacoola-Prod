@@ -23,7 +23,7 @@ import { addToCart } from "@lib/data/cart"
  * Which sizes appear still varies per product; how they look must not.
  */
 const SIZE_ROW_TYPOGRAPHY =
-  "text-[12px] lg:text-[14px] font-medium text-gray-900 tracking-widest uppercase"
+  "text-[12px] lg:text-[14px] font-bold text-gray-900 tracking-widest uppercase"
 
 /** One size label inside that row. */
 const SIZE_CHIP =
