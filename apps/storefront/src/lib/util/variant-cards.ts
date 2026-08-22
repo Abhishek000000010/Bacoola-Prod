@@ -23,11 +23,28 @@ export type VariantCard = {
   title: string
   thumbnail?: string | null
   href: string
+  /**
+   * Sizes buyable in THIS colourway, each already resolved to the variant the
+   * quick-add should add.
+   *
+   * Computed here because this is the last place the full variant list exists.
+   * Listing grids hand client components a trimmed product (see
+   * `trimToCardFields`) that keeps one variant per colourway and drops
+   * `variant.options` entirely, so the tile cannot work out which variant a
+   * chosen size belongs to -- the size sheet opened, but every tap resolved to
+   * nothing and silently failed. Shipping the mapping is a few dozen bytes per
+   * card and keeps the trim's payload win intact.
+   */
+  sizes?: { value: string; variantId: string }[]
 }
 
 /** Matches "color", "Colour", "COLOR" -- spelling is inconsistent across products. */
 const isColourOption = (option: any): boolean =>
   /^colou?rs?$/i.test((option?.title ?? "").trim())
+
+/** Matches "size" / "Sizes" -- same spelling drift as colour. */
+const isSizeOption = (option: any): boolean =>
+  /^sizes?$/i.test((option?.title ?? "").trim())
 
 const valueForOption = (variant: any, optionId: string): string | undefined =>
   (variant?.options ?? []).find((o: any) => o.option_id === optionId)?.value
@@ -149,6 +166,58 @@ export function getVariantCards(product: HttpTypes.StoreProduct): VariantCard[] 
 
   const images = assignImages(product, grouped)
 
+  const sizeOption = (product.options ?? []).find(isSizeOption)
+
+  /**
+   * The order sizes are meant to be shown in: S, M, L, XL, XXL rather than
+   * whatever order the variants happen to come back in.
+   *
+   * The option's own `values` carry that order, which is why reading sizes off
+   * `sizeOption.values` used to display them correctly. Walking the variant
+   * list instead is what makes the per-colourway mapping possible, so the order
+   * has to be restored explicitly -- without this the sheet showed "XXL M XL S".
+   */
+  const sizeRank = new Map<string, number>(
+    ((sizeOption?.values ?? []) as any[]).map((v, i) => [v.value, i])
+  )
+
+  /**
+   * Sizes for one card. With a colour option a card is a colourway, so only
+   * that colour's variants qualify; without one every card is already a single
+   * variant, and the whole product's sizes are the sensible set to offer.
+   *
+   * Deduped on the size value, keeping the first variant, so a product that
+   * splits a size further (a second option beyond colour and size) still
+   * yields one entry per size rather than a repeated chip.
+   */
+  const sizesForCard = (label?: string) => {
+    if (!sizeOption) return undefined
+
+    const seen = new Set<string>()
+    const sizes: { value: string; variantId: string }[] = []
+
+    for (const variant of variants) {
+      if (colourOption && label !== undefined) {
+        if (valueForOption(variant, colourOption.id) !== label) continue
+      }
+
+      const value = valueForOption(variant, sizeOption.id)
+      if (!value || seen.has(value) || !variant.id) continue
+
+      seen.add(value)
+      sizes.push({ value, variantId: variant.id })
+    }
+
+    // Unknown values sort last rather than jumping to the front.
+    sizes.sort(
+      (a, b) =>
+        (sizeRank.get(a.value) ?? Number.MAX_SAFE_INTEGER) -
+        (sizeRank.get(b.value) ?? Number.MAX_SAFE_INTEGER)
+    )
+
+    return sizes.length ? sizes : undefined
+  }
+
   return grouped.map(({ label, variant }, index) => ({
     key: variant.id,
     variantId: variant.id,
@@ -156,5 +225,6 @@ export function getVariantCards(product: HttpTypes.StoreProduct): VariantCard[] 
     title: label ? `${product.title}-(${label})` : product.title,
     thumbnail: images[index],
     href: `${base}?v_id=${variant.id}`,
+    sizes: sizesForCard(colourOption ? label : undefined),
   }))
 }

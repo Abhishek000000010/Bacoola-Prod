@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 import { useParams } from "next/navigation"
 import { Text } from "@modules/common/components/ui"
 import { getProductPrice } from "@lib/util/get-product-price"
@@ -28,6 +29,13 @@ const SIZE_ROW_TYPOGRAPHY =
 /** One size label inside that row. */
 const SIZE_CHIP =
   "nav-underline cursor-pointer px-1 focus:outline-none disabled:opacity-50"
+
+/**
+ * How long the size sheet takes to slide back down. Must stay in step with the
+ * `ppSizeSheetDown` keyframes and the backdrop's fade, or the sheet is dropped
+ * from the DOM part-way through the animation.
+ */
+const SHEET_EXIT_MS = 280
 
 export default function ProductPreview({
   product,
@@ -139,18 +147,51 @@ export default function ProductPreview({
   // same pattern the product page uses.
   const { countryCode } = (useParams() as { countryCode?: string }) ?? {}
   const [showSizeSheet, setShowSizeSheet] = useState(false)
+  // Kept mounted for the length of the exit animation; see `dismissSheet`.
+  const [isClosing, setIsClosing] = useState(false)
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [addingSize, setAddingSize] = useState<string | null>(null)
   const [addedSize, setAddedSize] = useState<string | null>(null)
+  // Drives the ADD button's pending label, the way the product page's does.
+  const [isAdding, setIsAdding] = useState(false)
+
+  useEffect(() => () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current)
+  }, [])
 
   const sizeOption = product.options?.find(
     (o: any) => o.title?.toLowerCase() === "size" || o.title?.toLowerCase() === "sizes"
   )
-  const sizeValues: string[] = (sizeOption?.values ?? []).map((v: any) => v.value)
+
+  // Listing grids trim the product before serialising it to the client: one
+  // variant per colourway, and no `variant.options` at all. Resolving a size
+  // against `product.variants` therefore cannot work there, so those tiles
+  // carry `card.sizes` -- the size -> variant map worked out on the server
+  // where the full variant list still exists. Rails, related-product strips
+  // and the wishlist pass an untrimmed product, and keep the local lookup.
+  const cardSizes = card?.sizes
+
+  const sizeValues: string[] = cardSizes
+    ? cardSizes.map((s) => s.value)
+    : (sizeOption?.values ?? []).map((v: any) => v.value)
+
+  // Only a genuine colour option pins the size pick to this tile's colourway.
+  // getVariantCards() falls back to one card per variant for colourless
+  // products, and there `card.label` is just that variant's own size -- so
+  // matching it against "any option value" would require the newly chosen
+  // size to also equal the card's original size, which is never true.
+  const colourOption = product.options?.find(
+    (o: any) => /^colou?rs?$/i.test((o.title ?? "").trim())
+  )
 
   // Resolve a size to the actual variant to add. When this tile is a single
   // colourway, keep to that colour and only vary the size; otherwise match on
   // size alone.
   const resolveVariantForSize = (sizeValue: string): string | undefined => {
+    if (cardSizes) {
+      return cardSizes.find((s) => s.value === sizeValue)?.variantId
+    }
+
     const variants = (product.variants as any[]) ?? []
     const match = variants.find((variant) => {
       const opts: any[] = variant.options ?? []
@@ -158,8 +199,10 @@ export default function ProductPreview({
         (o) => o.option_id === sizeOption?.id && o.value === sizeValue
       )
       if (!sizeOk) return false
-      if (card?.label) {
-        return opts.some((o) => o.value === card.label)
+      if (card?.label && colourOption) {
+        return opts.some(
+          (o) => o.option_id === colourOption.id && o.value === card.label
+        )
       }
       return true
     })
@@ -173,20 +216,69 @@ export default function ProductPreview({
     e.stopPropagation()
     if (sizeValues.length === 0) {
       const variantId = card?.variantId ?? (product.variants as any[])?.[0]?.id
-      if (variantId && countryCode) addToCart({ variantId, quantity: 1, countryCode })
+      if (!variantId || !countryCode || isAdding) return
+      setIsAdding(true)
+      addToCart({ variantId, quantity: 1, countryCode })
+        .catch((error) => console.error("Error adding to cart:", error))
+        .finally(() => setIsAdding(false))
       return
     }
+    // Reopening mid-close would otherwise leave the pending timer to unmount
+    // the sheet a moment after it slid back up.
+    if (closeTimer.current) clearTimeout(closeTimer.current)
+    setIsClosing(false)
     setShowSizeSheet(true)
+  }
+
+  /**
+   * Plays the sheet back down before unmounting it.
+   *
+   * Unmounting on the click killed the node mid-air, so the sheet vanished
+   * rather than sliding away. `isClosing` keeps it mounted for one animation
+   * and swaps the keyframes; the timer then drops it for real.
+   */
+  const dismissSheet = () => {
+    if (isClosing) return
+    setIsClosing(true)
+    closeTimer.current = setTimeout(() => {
+      setShowSizeSheet(false)
+      setIsClosing(false)
+    }, SHEET_EXIT_MS)
   }
 
   const closeSizeSheet = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    setShowSizeSheet(false)
+    dismissSheet()
   }
 
-  // Add a chosen size. `fromSheet` closes the sheet on success; the desktop
-  // hover chips leave it be (there is no sheet there).
+  /**
+   * Swallows a click that lands on the sheet itself rather than on a control.
+   *
+   * The sheet is portalled out of the tile's <LocalizedClientLink>, so the
+   * browser can no longer navigate off a stray tap. React is the remaining
+   * path: events raised inside a portal still bubble along the React tree to
+   * the link's handler, which `stopPropagation` cuts off. `preventDefault` costs
+   * nothing and keeps this correct if the sheet is ever nested again.
+   */
+  const swallowSheetClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  /**
+   * Add a chosen size.
+   *
+   * The two surfaces confirm differently because they have different room to do
+   * it in, and each matches its counterpart on the product page:
+   *
+   * - `fromSheet` (mobile) mirrors the product page's sheet exactly: it slides
+   *   down the moment a size is tapped and the request runs behind it, with the
+   *   ADD button carrying the pending state. Holding the sheet open for a spinner
+   *   and a tick made the same action feel slower here than on the product page.
+   * - The desktop hover chips have no button to report progress, so the chip
+   *   itself stands in.
+   */
   const addSize = async (
     e: React.MouseEvent,
     sizeValue: string,
@@ -194,19 +286,29 @@ export default function ProductPreview({
   ) => {
     e.preventDefault()
     e.stopPropagation()
-    if (addingSize || !countryCode) return
+    if (addingSize || isAdding || !countryCode) return
 
     const variantId = resolveVariantForSize(sizeValue)
     if (!variantId) return
+
+    if (fromSheet) {
+      dismissSheet()
+      setIsAdding(true)
+      try {
+        await addToCart({ variantId, quantity: 1, countryCode })
+      } catch (error) {
+        console.error("Error adding to cart:", error)
+      } finally {
+        setIsAdding(false)
+      }
+      return
+    }
 
     setAddingSize(sizeValue)
     try {
       await addToCart({ variantId, quantity: 1, countryCode })
       setAddedSize(sizeValue)
-      setTimeout(() => {
-        setAddedSize(null)
-        if (fromSheet) setShowSizeSheet(false)
-      }, fromSheet ? 700 : 1200)
+      setTimeout(() => setAddedSize(null), 1200)
     } catch (error) {
       console.error("Error adding to cart:", error)
     } finally {
@@ -398,26 +500,46 @@ export default function ProductPreview({
            <button
              type="button"
              onClick={openSizeSheet}
-             className="pp-m-add-btn hidden w-full bg-[#111111] text-white text-[12px] lg:text-[14px] font-bold py-3 mt-1 items-center justify-center transition-colors hover:bg-black focus:outline-none"
+             disabled={isAdding}
+             className="pp-m-add-btn hidden w-full bg-[#111111] text-white text-[12px] lg:text-[14px] font-bold py-3 mt-1 items-center justify-center transition-colors hover:bg-black focus:outline-none disabled:opacity-60"
            >
-             ADD
+             {isAdding ? "ADDING..." : "ADD"}
            </button>
         </div>
 
         {/* Bottom-sheet size picker (mobile only), mirroring the product page.
             Fixed to the viewport so it slides up from the bottom of the screen,
-            not from inside the card. */}
-        {showSizeSheet && sizeValues.length > 0 && (
+            not from inside the card.
+
+            Portalled to <body> because the tile is one big <LocalizedClientLink>,
+            and a modal nested inside an <a> is navigation waiting to happen:
+            cancelling the event on every control is a rule each new control has
+            to remember, and missing it once sends the shopper to the PDP mid-
+            interaction. Out here that is structurally impossible. Rendered only
+            once open, which is always client-side, so it never runs during SSR. */}
+        {showSizeSheet &&
+          sizeValues.length > 0 &&
+          typeof document !== "undefined" &&
+          createPortal(
           <div className="fixed inset-0 z-[200] small:hidden" onClick={closeSizeSheet}>
-            <div className="absolute inset-0 bg-black/25" aria-hidden="true" />
+            <div
+              aria-hidden="true"
+              className={`absolute inset-0 bg-black/25 transition-opacity duration-[280ms] ease-out ${
+                isClosing ? "opacity-0" : "opacity-100"
+              }`}
+            />
             <div
               role="dialog"
               aria-modal="true"
               aria-label="Choose your size"
-              onClick={(e) => e.stopPropagation()}
-              className="absolute inset-x-0 bottom-0 flex max-h-[85vh] flex-col bg-white shadow-[0_-8px_32px_rgba(0,0,0,0.12)] animate-[ppSizeSheetUp_0.32s_cubic-bezier(0.32,0.72,0,1)]"
+              onClick={swallowSheetClick}
+              className={`absolute inset-x-0 bottom-0 flex max-h-[85vh] flex-col bg-white shadow-[0_-8px_32px_rgba(0,0,0,0.12)] ${
+                isClosing
+                  ? "animate-[ppSizeSheetDown_0.28s_cubic-bezier(0.32,0.72,0,1)_forwards]"
+                  : "animate-[ppSizeSheetUp_0.32s_cubic-bezier(0.32,0.72,0,1)]"
+              }`}
             >
-              <style>{`@keyframes ppSizeSheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}`}</style>
+              <style>{`@keyframes ppSizeSheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}@keyframes ppSizeSheetDown{from{transform:translateY(0)}to{transform:translateY(100%)}}`}</style>
 
               <header className="flex shrink-0 items-center justify-between gap-x-4 px-5 pt-6 pb-4">
                 <h2 className="text-[13px] font-bold uppercase tracking-[0.02em] text-neutral-900">
@@ -442,16 +564,16 @@ export default function ProductPreview({
                       key={size}
                       type="button"
                       onClick={(e) => addSize(e, size, true)}
-                      disabled={addingSize !== null}
-                      className="relative flex h-[68px] items-start justify-start border-r border-b border-neutral-200 bg-white px-3 py-3 text-[13px] font-bold uppercase text-neutral-900 transition-colors active:bg-neutral-100 focus:outline-none disabled:opacity-50"
+                      className="relative flex h-[68px] items-start justify-start border-r border-b border-neutral-200 bg-white px-3 py-3 text-[13px] font-bold uppercase text-neutral-900 transition-colors active:bg-neutral-100 focus:outline-none"
                     >
-                      {addedSize === size ? "✓" : addingSize === size ? "…" : size}
+                      {size}
                     </button>
                   ))}
                 </div>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
       </div>
     </LocalizedClientLink>
