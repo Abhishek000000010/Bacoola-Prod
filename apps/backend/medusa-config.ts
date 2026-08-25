@@ -1,4 +1,5 @@
 import { loadEnv, defineConfig } from '@medusajs/framework/utils'
+import { bacoolaAdminBranding } from './src/lib/admin-branding-plugin'
 
 loadEnv(process.env.NODE_ENV || 'development', process.cwd())
 
@@ -122,6 +123,16 @@ module.exports = defineConfig({
     ...(process.env.COOKIE_INSECURE === "true"
       ? { cookieOptions: { secure: false, sameSite: "lax" as const } }
       : {}),
+  },
+  admin: {
+    // Branding for the admin screens no widget zone can reach — the
+    // password-reset and invite pages, and the sidebar's store name. See
+    // src/lib/admin-branding-plugin.ts for why this is a stylesheet and not a
+    // widget. The login screen is branded separately by
+    // src/admin/widgets/login-branding.tsx, which can use `login.before`.
+    vite: () => ({
+      plugins: [bacoolaAdminBranding()],
+    }),
   },
   modules: [
     ...redisModules,
