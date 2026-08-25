@@ -9,12 +9,15 @@ import { findSaleCategoriesForProduct, syncSalePrices } from "../lib/sale-prices
  * while the storefront keeps charging 40% — the panel silently disagrees with the
  * site until someone remembers to run the script.
  *
- * Coverage is partial, and deliberately so:
+ * Coverage, and where each event comes from:
  *  - editing a category (incl. its metadata) emits `product-category.updated`
  *  - editing a product (incl. its categories) emits `product.updated`
- *  - adding products from the *category* page emits NOTHING: the underlying
- *    `batchLinkProductsToCategoryWorkflow` has no emitEventStep, so there is no
- *    event to hook. Assign categories from the product page, or re-run the script.
+ *  - adding or removing products from the *category* page emits NOTHING of its
+ *    own: `batchLinkProductsToCategoryWorkflow` has no emitEventStep. The
+ *    `syncSalePricesOnCategoryProducts` middleware in ../api/middlewares.ts
+ *    emits `product-category.updated` for that route instead, so both
+ *    directions of the link now land here. Do not drop that middleware
+ *    expecting the workflow to cover it.
  */
 export default async function syncSalePricesHandler({
   event,

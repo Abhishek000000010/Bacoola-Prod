@@ -4,7 +4,7 @@ import {
   MedusaRequest,
   MedusaResponse,
 } from "@medusajs/framework/http"
-import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
+import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 import { parseSalePercent } from "../lib/sale-prices"
 
 /**
@@ -326,11 +326,25 @@ function ancestorsOf(byId: Map<string, Cat>, id: string): Cat[] {
   return chain
 }
 
+/**
+ * The category that owns sale pricing for `id`: itself if it declares
+ * `metadata.sale_percent`, otherwise its nearest ancestor that does.
+ *
+ * Nearest, not outermost, because a descendant declaring its own percent takes
+ * over its subtree -- the same rule syncSalePrices walks when it collects a
+ * subtree. Null when nothing in the chain is on sale.
+ */
+function nearestSaleCategory(byId: Map<string, Cat>, id: string): Cat | null {
+  return (
+    ancestorsOf(byId, id).find(
+      (c) => parseSalePercent(c.metadata?.sale_percent) !== null
+    ) ?? null
+  )
+}
+
 // A category is "sale" when it or any ancestor declares metadata.sale_percent.
 function isSaleCategory(byId: Map<string, Cat>, id: string): boolean {
-  return ancestorsOf(byId, id).some(
-    (c) => parseSalePercent(c.metadata?.sale_percent) !== null
-  )
+  return nearestSaleCategory(byId, id) !== null
 }
 
 /**
@@ -460,6 +474,87 @@ export async function validateCategoryProducts(
 }
 
 /**
+ * Rebuilds sale pricing after products are linked to (or unlinked from) a
+ * category on the CATEGORY screen.
+ *
+ * The sale-prices subscriber listens for `product.updated`, which covers
+ * assigning categories from the product screen. The category screen goes
+ * through `batchLinkProductsToCategoryWorkflow`, which has no emitEventStep --
+ * so no event, no sync, and the product sits in the sale category at full
+ * price while every product added the other way is discounted. That is the
+ * "added it from the category page and it never went on sale" bug.
+ *
+ * This closes the gap by emitting the event the workflow does not, rather than
+ * calling syncSalePrices here: the subscriber already owns the error handling
+ * and the scoping, and going through the (Redis-backed) event bus keeps the
+ * rebuild off the admin's request -- a large sale category takes seconds to
+ * reprice and the admin must not sit waiting for it.
+ *
+ * Fires on `remove` as well as `add`: dropping a product from a sale category
+ * has to withdraw its discounted prices, or the list keeps pricing a product
+ * that is no longer in the sale.
+ */
+export async function syncSalePricesOnCategoryProducts(
+  req: MedusaRequest,
+  res: MedusaResponse,
+  next: MedusaNextFunction
+) {
+  try {
+    const body = (req.body ?? {}) as any
+    const categoryId = (req.params as any)?.id
+    const touched: string[] = [
+      ...(Array.isArray(body.add) ? body.add : []),
+      ...(Array.isArray(body.remove) ? body.remove : []),
+    ]
+
+    if (categoryId && touched.length) {
+      const byId = await loadCategories(req)
+
+      // Only a category inside a sale subtree has generated prices to rebuild.
+      // Linking into a plain sub-category changes no sale list, so skip the work.
+      const saleCategory = nearestSaleCategory(byId, categoryId)
+
+      if (saleCategory) {
+        // Resolved HERE, while the request scope is alive. `req.scope` is a
+        // per-request container; reaching into it from the `finish` handler
+        // below would be resolving from a scope the framework may already have
+        // torn down. Holding the module instance sidesteps that entirely.
+        const eventBus = req.scope.resolve(Modules.EVENT_BUS)
+        const logger = req.scope.resolve(ContainerRegistrationKeys.LOGGER)
+
+        // After the response, not before: the link rows do not exist until the
+        // route handler has run, and a sync that reads the old membership would
+        // rebuild the list without the product that was just added.
+        res.on("finish", () => {
+          // Guard rejected requests -- validateCategoryProducts above turns a
+          // second sub-category into a 400, and nothing was linked.
+          if (res.statusCode >= 400) {
+            return
+          }
+
+          Promise.resolve(
+            eventBus.emit({
+              name: "product-category.updated",
+              data: { id: saleCategory.id },
+            })
+          ).catch((e: Error) =>
+            logger.error(
+              `[sale-prices] could not queue a sync for ${labelOf(saleCategory)}: ${e.message}`
+            )
+          )
+        })
+      }
+    }
+  } catch (err) {
+    // Same rule as the guards above: never break the admin action. Worst case
+    // the sale price is stale until the next product edit or a manual
+    // `medusa exec ./src/scripts/sync-sale-prices.ts`.
+  }
+
+  return next()
+}
+
+/**
  * Refuses to delete a product's last variant.
  *
  * A product with no variants cannot be priced, added to a cart, or published --
@@ -523,7 +618,7 @@ export default defineMiddlewares({
     {
       matcher: "/admin/product-categories/:id/products",
       method: "POST",
-      middlewares: [validateCategoryProducts],
+      middlewares: [validateCategoryProducts, syncSalePricesOnCategoryProducts],
     },
     {
       matcher: "/admin/products/:id/variants",
