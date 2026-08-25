@@ -21,8 +21,12 @@ export default function PreviewPrice({ price, isMobileLayout }: { price: Variant
     )
   }
 
+  // The gap lives here rather than on each caller's wrapper: this used to be a
+  // bare fragment, so spacing came from whichever parent happened to set one --
+  // and the desktop tile set none, leaving the struck-through price glued to the
+  // sale price. Matches the mobile branch above so both breakpoints agree.
   return (
-    <>
+    <div className="flex items-center gap-x-1.5">
       {price.price_type === "sale" && (
         <Text
           className="!text-[12px] lg:text-[14px] line-through text-ui-fg-muted"
@@ -39,6 +43,6 @@ export default function PreviewPrice({ price, isMobileLayout }: { price: Variant
       >
         {price.calculated_price}
       </Text>
-    </>
+    </div>
   )
 }
