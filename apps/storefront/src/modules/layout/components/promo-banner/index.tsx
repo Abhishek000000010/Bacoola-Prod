@@ -15,6 +15,27 @@ const ROOT_SECTIONS = ["women", "men", "teen", "kids"]
 const FALLBACK_SECTION = "women"
 
 /**
+ * Static pages that carry no sale banner. Keyed on the first path segment, the
+ * same way the cart/checkout suppression below works.
+ */
+const INFORMATIONAL_ROUTES = new Set([
+  "stores",
+  "company",
+  "careers",
+  "press",
+  "responsibility",
+  "ethics",
+  "sitemap",
+  "contact",
+  "help",
+  "returns",
+  "privacy-policy",
+  "terms-and-conditions",
+  "shipping-policy",
+  "refund-and-cancellation-policy",
+])
+
+/**
  * Sale percentage for a category, or null if it isn't a "sale headline" category.
  * `metadata.sale_percent` wins so the banner follows admin edits; otherwise the
  * percentage is read off the name (e.g. "Sale 90% off").
@@ -64,6 +85,14 @@ const PromoBanner: React.FC<PromoBannerProps> = ({ categories }) => {
     cleanSegments[0] === "wishlist" ||
     cleanSegments[0] === "order"
   ) {
+    return null
+  }
+
+  // Informational pages are not shopping pages. Someone reading a privacy
+  // policy, looking up a store or raising an ethics report is not mid-browse,
+  // and a discount strip above that content is noise -- it also pushes the
+  // page's real content down below the fold for no gain.
+  if (INFORMATIONAL_ROUTES.has(cleanSegments[0])) {
     return null
   }
 

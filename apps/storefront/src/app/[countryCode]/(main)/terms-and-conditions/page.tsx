@@ -1,239 +1,269 @@
 import { Metadata } from "next"
+import { LEGAL } from "@lib/legal-config"
+import {
+  Address,
+  Entity,
+  Fact,
+  GrievanceOfficer,
+  LegalPage,
+  PolicyLink,
+  Section,
+} from "@modules/legal/components/layout"
 
 export const metadata: Metadata = {
   title: "Terms and conditions",
-  description: "Review the general conditions of sale which regulate the purchase of Bacoola products.",
+  description:
+    "The conditions of sale governing purchases made from Bacoola through this website.",
 }
 
+/**
+ * Rewritten from scratch against Indian law.
+ *
+ * The previous version of this page was another retailer's terms with the name
+ * replaced. It bound "Bacoola MNG, S.A." of Barcelona, quoted a Spanish VAT
+ * number and a Barcelona companies register entry, and listed twenty-eight EU
+ * member states as the distribution area -- in a document that purports to be
+ * the contract between this store and an Indian customer. None of it was
+ * salvageable by editing, so none of it was kept.
+ */
 export default function TermsAndConditions() {
   return (
-    <div className="bg-white min-h-screen pt-24 pb-24">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-[15px] font-bold uppercase tracking-wide text-neutral-950 mb-4">
-          Terms and conditions
-        </h1>
-        <p className="text-[12px] lg:text-[14px] sm:text-[12px] lg:text-[14px] text-neutral-900 mb-10">
-          Latest version: 07/07/2026
+    <LegalPage title="Terms and conditions">
+      <Section heading="Introduction">
+        <p>
+          These terms and conditions govern the sale of products by{" "}
+          <Entity /> (&quot;{LEGAL.brand}&quot;, &quot;we&quot;, &quot;us&quot;)
+          through this website, and your use of the website itself.
         </p>
+        <p>
+          By placing an order you accept these terms. Please read them before
+          you order. If there is anything you do not agree with, do not place an
+          order and contact us instead.
+        </p>
+      </Section>
 
-        <section className="mb-12">
-          <h2 className="text-[12px] lg:text-[14px] sm:text-[15px] font-bold uppercase tracking-wide text-neutral-950 mb-4">
-            Introduction
-          </h2>
-          <div className="space-y-4 text-[12px] lg:text-[14px] sm:text-[12px] lg:text-[14px] text-neutral-900 leading-[1.8] font-normal">
-            <p>
-              Bacoola offers you an online purchasing service which allows you to purchase a selection of the items available at our stores from your computer. You can also benefit from promotions, gifts and exclusive offers.
-            </p>
-            <p>
-              Below, we invite you to review the general conditions of sale which regulate the purchase of Bacoola products via this Website. Therefore, use of this Webpage implies your acceptance of these general conditions of sale. However, if you have any queries regarding the same, please contact our <a href="/help" className="font-bold underline underline-offset-[3px] decoration-[1.5px] text-neutral-950 hover:text-neutral-500 transition-colors">Customer Services</a> department.
-            </p>
-          </div>
-        </section>
+      <Section heading="Our details">
+        <p>The seller under these terms is:</p>
+        <p>
+          <Entity />
+          <br />
+          Trading as {LEGAL.brand}
+          <br />
+          <Address />
+        </p>
+        <p>
+          <strong>CIN:</strong> <Fact value={LEGAL.cin} describe="CIN" />
+          <br />
+          <strong>GSTIN:</strong> <Fact value={LEGAL.gstin} describe="GSTIN" />
+          <br />
+          <strong>Email:</strong> {LEGAL.email}
+          <br />
+          <strong>Telephone:</strong> {LEGAL.phone}
+        </p>
+      </Section>
 
-        <section className="mb-12">
-          <h2 className="text-[12px] lg:text-[14px] sm:text-[15px] font-bold uppercase tracking-wide text-neutral-950 mb-4">
-            Our details
-          </h2>
-          <div className="space-y-4 text-[12px] lg:text-[14px] sm:text-[12px] lg:text-[14px] text-neutral-900 leading-[1.8] font-normal">
-            <p>The following conditions regulate the sale of products featured on this Webpage by the company:</p>
-            <p>Bacoola MNG, S.A. (hereinafter, "Bacoola")</p>
-            <p>
-              Via Augusta, 10<br />
-              Pol. Ind. Riera de Caldes<br />
-              C.P. 08184 Palau-solità i Plegamans<br />
-              Barcelona (Spain)
-            </p>
-            <p>
-              Registered in the Barcelona Companies Register under Volume/IRUS 1000318835574, Folio 3, Sheet B 167948, Entry 147 and with VAT Number ES-A59088948.
-            </p>
-          </div>
-        </section>
+      <Section heading="Eligibility">
+        <p>
+          To place an order you must be at least 18 years of age and competent
+          to contract under the Indian Contract Act, 1872. By ordering you
+          confirm that you are.
+        </p>
+        <p>
+          Products sold through this website are distributed within{" "}
+          {LEGAL.shipsTo} only. We do not accept orders for delivery outside{" "}
+          {LEGAL.shipsTo}.
+        </p>
+      </Section>
 
-        <section className="mb-12">
-          <h2 className="text-[12px] lg:text-[14px] sm:text-[15px] font-bold uppercase tracking-wide text-neutral-950 mb-4">
-            Contract
-          </h2>
-          
-          <h3 className="text-xs lg:text-sm sm:text-[12px] lg:text-[14px] font-bold text-neutral-900 mb-3 mt-6">Availability of the service</h3>
-          <div className="space-y-4 text-[12px] lg:text-[14px] sm:text-[12px] lg:text-[14px] text-neutral-900 leading-[1.8] font-normal">
-            <p>
-              By placing an order on the Website/App, you guarantee that you are 18 years old or over. The products offered are distributed in the following member states of the European Union: Austria, Belgium, Bulgaria, Croatia, Cyprus (southern area), Czech Republic, Denmark, Estonia, Finland, France (metropolitan area), Germany, Greece, Hungary, Ireland, Italy (except San Marino, Livigno, Campione, Vatican City and Italian waters of Lake Lugano), Latvia, Lithuania, Luxembourg, Malta, Netherlands, Poland, Portugal, Romania, Slovakia, Slovenia, Spain (including the Canary Islands, Ceuta and Melilla), Sweden and the United Kingdom.
-            </p>
-            <p>
-              Our products are also distributed in the following countries: Albania, Andorra, Aruba, Australia, Bahrain, Bosnia-Herzegovina, Canada, Channel Islands, China, Colombia, Costa Rica, Curaçao, Egypt, French Guyana, Guadeloupe, Guatemala, Hong Kong, India, Indonesia, Iceland, Jordan, Kazakhstan, Kuwait, Lebanon, Liechtenstein, Macao, Malaysia, Maldives, Martinique, Mexico, Monaco, Nicaragua, Norway, Qatar, Oman, Panama, Philippines, Russia, Salvador, Saudi Arabia, Serbia, Singapore, South Africa, South Korea, Switzerland, Turkey, United Arab Emirates, United States, Uzbekistan.
-            </p>
-            <p>
-              You may purchase from the country of your choice, but we are only able to send your order to addresses located in the chosen country. The delivery methods, conditions of sale and delivery points will be updated when you change the country.
-            </p>
-          </div>
+      <Section heading="Your account">
+        <p>
+          You are responsible for keeping your account credentials confidential
+          and for all activity carried out under your account. Tell us promptly
+          if you believe your account has been used without your authorisation.
+        </p>
+        <p>
+          We may suspend or close an account where we have reasonable grounds to
+          believe it is being used fraudulently or in breach of these terms.
+        </p>
+      </Section>
 
-          <h3 className="text-xs lg:text-sm sm:text-[12px] lg:text-[14px] font-bold text-neutral-900 mb-3 mt-8">Purchase guarantee</h3>
-          <div className="space-y-4 text-[12px] lg:text-[14px] sm:text-[12px] lg:text-[14px] text-neutral-900 leading-[1.8] font-normal">
-            <p>
-              The items offered on this Webpage are a selection of products from the Women's, Men's, Children's and Babies' collections and meet the same quality requirements and guarantee as the products on sale at Bacoola Group stores.
-            </p>
-            <p>Each product features the following details:</p>
-            <ul className="list-disc pl-5 space-y-1">
-              <li>Name of the article</li>
-              <li>Photo of the article</li>
-              <li>Description of the article</li>
-              <li>Available sizes and colours*</li>
-              <li>Composition</li>
-              <li>Wash and care instructions</li>
-              <li>Price (in the corresponding currency)</li>
-            </ul>
-            <p className="text-neutral-500 italic">
-              *Bacoola has made every effort to display the colours of the items as realistically as possible. However, the colour of the garments that appear on the screen may be subject to changes depending on the quality of your computer monitor. Therefore, Bacoola cannot guarantee that the colours that appear on your monitor are a true representation of the actual colours.
-            </p>
-            <p>
-              Special offers, promotions or discounts will be valid until the indicated date or while stocks last.
-            </p>
-            <p>
-              Similarly, Bacoola makes every effort to ensure that the information contained on its website is complete, accurate and correct. In the event of any error, Bacoola will proceed to correct it immediately.
-            </p>
-          </div>
+      <Section heading="Products and availability">
+        <p>
+          We take care to describe and picture products accurately. Photographs
+          are illustrative, and the colour reproduced on your screen may differ
+          slightly from the actual product.
+        </p>
+        <p>
+          All products are subject to availability. If an item becomes
+          unavailable after you have ordered it, we will tell you and refund the
+          amount paid for that item in full.
+        </p>
+      </Section>
 
-          <h3 className="text-xs lg:text-sm sm:text-[12px] lg:text-[14px] font-bold text-neutral-900 mb-3 mt-8">Purchase procedure</h3>
-          <div className="space-y-4 text-[12px] lg:text-[14px] sm:text-[12px] lg:text-[14px] text-neutral-900 leading-[1.8] font-normal">
-            <ol className="list-decimal pl-5 space-y-3">
-              <li>Select the articles you wish to purchase and add them to the shopping basket, by clicking on the corresponding icon.</li>
-              <li>The shopping basket contains the reference of the selected item, its name, size, colour and price in the corresponding country (including taxes). The quoted price does not include transport costs, which will vary according to the delivery method selected.</li>
-              <li>To proceed with the purchase, the user's personal details will be required and will be included on our database in order to process the order and simplify future purchases via the Website. The personal details provided by users will be treated in accordance with our <a href="/privacy-policy" className="font-bold underline underline-offset-[3px] decoration-[1.5px] text-neutral-950 hover:text-neutral-500 transition-colors">Privacy Policy</a>. Users may, at any moment, access the personal details they have provided and information on the orders they have placed. Bacoola reminds users that their personal details must be as accurate as possible in order to avoid any confusion or errors in the dispatch of the item(s) purchased. Furthermore, wherever expressly requested by users, they will receive information and publications relative to the Bacoola Group by post and/or SMS.</li>
-              <li>Once the order has been completed, and before the order is confirmed, the user will be provided with an itemised summary of the order, identifying the item(s) purchased, the total price (including transport and taxes) and the order delivery details, in order for the user to confirm this by clicking on the 'Confirm payment' button.</li>
-            </ol>
-            <p>
-              Purchases may be paid for using a credit or debit card (Visa, Visa Electron and MasterCard). Payment method other than the one specified in the present conditions of sale will not be accepted. For payments by credit or debit card, the charge will be made online, in other words, in real time, through the payment gateway of the corresponding financial entity, once it has been confirmed that the data sent by the user is correct.
-            </p>
-            <p>
-              Once the transaction has been confirmed, the order number will be displayed on the webpage, allowing users to track the order from their computer at any moment.
-            </p>
-            <p>
-              An automated order confirmation e-mail will also be sent to the address indicated by the user with acknowledgement of receipt, with a description of the order and the personal details provided. If you do not receive this e-mail, this could be due to a temporary communications problem in the network or an error in the e-mail address entered. In both cases, Bacoola advises the user to contact <a href="/help" className="font-bold underline underline-offset-[3px] decoration-[1.5px] text-neutral-950 hover:text-neutral-500 transition-colors">Customer Services</a>. Similarly, an e-mail will be sent to the user confirming that the product has been dispatched.
-            </p>
-          </div>
+      <Section heading="Prices and taxes">
+        <p>
+          Prices are displayed in Indian Rupees and are inclusive of Goods and
+          Services Tax unless stated otherwise. Delivery charges, where
+          applicable, are shown separately before you confirm your order and are
+          set out in our{" "}
+          <PolicyLink href="/shipping-policy">Shipping Policy</PolicyLink>.
+        </p>
+        <p>
+          We may change prices at any time, but a change will not affect an
+          order we have already accepted. If a product is listed at a manifestly
+          incorrect price as a result of an error, we are not obliged to supply
+          it at that price; we will contact you and you may confirm the order at
+          the correct price or cancel it for a full refund.
+        </p>
+      </Section>
 
-          <h3 className="text-xs lg:text-sm sm:text-[12px] lg:text-[14px] font-bold text-neutral-900 mb-3 mt-8">Availability of products</h3>
-          <div className="space-y-4 text-[12px] lg:text-[14px] sm:text-[12px] lg:text-[14px] text-neutral-900 leading-[1.8] font-normal">
-            <p>
-              All orders are subject to the products being available. If, at the time the order is issued, our warehouse detects that there are no stocks of any of the products included within it, Bacoola will make every effort to locate the item. If this is not possible, the user will be notified immediately. In addition, the amount charged for the unsent item will be refunded to the customer, using the same payment method used to purchase the item.
-            </p>
-          </div>
+      <Section heading="How a contract is formed">
+        <p>
+          Your order is an offer to buy. It is not accepted until we send you
+          confirmation that the order, or part of it, has been dispatched. Only
+          the items named in that dispatch confirmation form part of the
+          contract.
+        </p>
+        <p>
+          We may decline an order where the product is unavailable, where we
+          cannot obtain authorisation for your payment, where a pricing error
+          has occurred, or where we have reasonable grounds to suspect
+          fraudulent use of the website.
+        </p>
+      </Section>
 
-          <h3 className="text-xs lg:text-sm sm:text-[12px] lg:text-[14px] font-bold text-neutral-900 mb-3 mt-8">Right not to accept an order</h3>
-          <div className="space-y-4 text-[12px] lg:text-[14px] sm:text-[12px] lg:text-[14px] text-neutral-900 leading-[1.8] font-normal">
-            <p>Bacoola may cancel or refuse to accept any confirmed order on the following grounds:</p>
-            <ol className="list-decimal pl-5 space-y-1">
-              <li>In the event of a technical and/or typing error in the prices or other details of products contained on the webpage when the order was placed.</li>
-              <li>Due to a lack of availability, as described in point 3.4.</li>
-              <li>When the security systems indicate that the order may be fraudulent.</li>
-              <li>When there are reasons to indicate that the user is a minor.</li>
-              <li>If Bacoola was unable to deliver the order to the address provided.</li>
-            </ol>
-            <p>Bacoola will fully reimburse any sums that have been paid.</p>
-          </div>
-        </section>
+      <Section heading="Payment">
+        <p>
+          Payments are processed by {LEGAL.paymentGateway}. We do not receive or
+          store your full card number, CVV or UPI credentials — these are
+          handled by the payment gateway under the standards applicable to it,
+          including the card storage and tokenisation requirements of the
+          Reserve Bank of India.
+        </p>
+        <p>
+          Your order will not be dispatched until payment has been received in
+          full and authorised.
+        </p>
+      </Section>
 
-        <section className="mb-12">
-          <h2 className="text-[12px] lg:text-[14px] sm:text-[15px] font-bold uppercase tracking-wide text-neutral-950 mb-4">
-            Price and payment
-          </h2>
-          <div className="space-y-4 text-[12px] lg:text-[14px] sm:text-[12px] lg:text-[14px] text-neutral-900 leading-[1.8] font-normal">
-            <h3 className="text-xs lg:text-sm sm:text-[12px] lg:text-[14px] font-bold text-neutral-900">Payment and currency</h3>
-            <p>The prices on this Webpage are quoted in RS.</p>
-            <p>Bacoola allows users the option to select the destination country before placing their order, so that they can see the prices with the corresponding taxes included. If the customer subsequently modifies the delivery address and the destination country, the prices displayed in the final summary of the order may vary.</p>
-            
-            <h3 className="text-xs lg:text-sm sm:text-[12px] lg:text-[14px] font-bold text-neutral-900 mt-6">Taxes</h3>
-            <p>All products listed on your final order will include all applicable taxes at the current rate in force.</p>
+      <Section heading="Delivery">
+        <p>
+          Delivery timelines, charges and serviceable areas are set out in our{" "}
+          <PolicyLink href="/shipping-policy">Shipping Policy</PolicyLink>,
+          which forms part of these terms.
+        </p>
+        <p>
+          Risk in the products passes to you on delivery. Title passes when we
+          have received payment in full.
+        </p>
+      </Section>
 
-            <h3 className="text-xs lg:text-sm sm:text-[12px] lg:text-[14px] font-bold text-neutral-900 mt-6">Payment methods</h3>
-            <p>Bacoola only accepts payment by credit or debit card (Visa, Visa Electron and MasterCard).</p>
-            
-            <p className="font-bold text-neutral-900 mt-4">Payment by credit or debit card</p>
-            <p>Bacoola accepts payments for purchases made via its Website with the following credit or debit cards: Visa, Visa Electron and MasterCard.</p>
-            <p>For payments by credit or debit card, the charge will be made online, in other words, in real time, through the payment gateway of the corresponding financial entity, once it has been confirmed that the data sent by the user is correct.</p>
+      <Section heading="Cancellations, returns and refunds">
+        <p>
+          You may return an eligible item within {LEGAL.returnWindowDays} days
+          of delivery. The conditions that apply, the items that cannot be
+          returned, and the way refunds are made are set out in our{" "}
+          <PolicyLink href="/refund-and-cancellation-policy">
+            Refund and Cancellation Policy
+          </PolicyLink>
+          , which forms part of these terms.
+        </p>
+      </Section>
 
-            <h3 className="text-xs lg:text-sm sm:text-[12px] lg:text-[14px] font-bold text-neutral-900 mt-6">Payment security</h3>
-            <p>
-              In order to offer maximum security in the payment system, Bacoola uses the secure payment systems of the leading financial entities in e-commerce. Therefore, all confidential data is transferred directly and in an encrypted format (SSL) to the corresponding financial entity. For payment by Visa and MasterCard, Bacoola only accepts SET transactions (Secure Electronic Transactions) using the 3D Secure international protocol, which can be identified by the Verified by Visa and MasterCard SecureCode logos. The basic aim of the Secure Electronic Transactions initiative is to guarantee the security of Internet transactions. When you make payment through the secure payment gateway, the system will automatically check whether the credit card has been activated for Secure Electronic Transactions. Next, it will connect with the issuing bank of the card, which will request authorisation for the operation via a personal authentication code. The operation will only proceed if the issuing bank of the card confirms the authentication code. In all other cases, the transaction will be rejected. We also have the GeoTrust SSL safety certificate for online transactions.
-            </p>
-            <p>
-              As a complementary measure to the 'Secure payment' system, and in order to collaborate in the prevention of Internet fraud, Bacoola reserves the right to check the personal details provided by customers and to take the appropriate steps (including the cancellation of the order) in order to ensure that goods are dispatched in accordance with the data that is stated on the order.
-            </p>
+      <Section heading="Intellectual property">
+        <p>
+          The {LEGAL.brand} name and logo, and the content of this website
+          including text, photographs, graphics and page design, are owned by us
+          or used under licence. You may not copy, reproduce, distribute or
+          create derivative works from them without our written permission.
+        </p>
+      </Section>
 
-            <h3 className="text-xs lg:text-sm sm:text-[12px] lg:text-[14px] font-bold text-neutral-900 mt-6">Purchase limit</h3>
-            <p>The maximum amount per purchase is Rs. 32,500 and it cannot include more than 40 products.</p>
-          </div>
-        </section>
+      <Section heading="Acceptable use">
+        <p>
+          You may not use this website to do anything unlawful; attempt to gain
+          unauthorised access to it or to any system connected to it; introduce
+          malicious code; extract data from it by automated means; place
+          fraudulent or speculative orders; or resell products bought from it in
+          a manner that misrepresents their origin.
+        </p>
+      </Section>
 
-        <section className="mb-12">
-          <h2 className="text-[12px] lg:text-[14px] sm:text-[15px] font-bold uppercase tracking-wide text-neutral-950 mb-4">
-            Delivery
-          </h2>
-          <div className="space-y-4 text-[12px] lg:text-[14px] sm:text-[12px] lg:text-[14px] text-neutral-900 leading-[1.8] font-normal">
-            <p>
-              Delivery of items purchased at Bacoola.com will be carried out via an international courier company and delivered in approximately 6 to 8 working days. To get your order, you'll be required to provide your KYC. Delivery is free for orders over Rs. 6,500, and charged at Rs. 790 in the case of orders below this amount.
-            </p>
-            <p>
-              In order to avoid any delivery problems (incorrect addresses, nobody at home, etc.), you must complete the applicable form correctly and it is advisable to leave a contact telephone number in the corresponding field.
-            </p>
-            <p>
-              Orders can be tracked via the Bacoola.com Webpage, indicating the location of the goods at each moment until final reception.<br />
-              The delivery cost is calculated according to the delivery method chosen and the items purchased. The exact transport cost will be calculated every time an item is added to the shopping basket, and will be displayed on the order summary page that appears before the customer confirms the order by pressing the 'Confirm Payment' button, and before the credit card or debit card details are entered.
-            </p>
-            <p>Orders cannot be delivered to military bases or PO boxes.</p>
-            <p>
-              The delivery charges may be altered at any time without prior notice. Said change shall become effective from the moment the modification appears in the help pages and in the contract published on this Webpage. In all cases, the delivery charges that appear at the moment the order is placed shall apply.
-            </p>
-          </div>
-        </section>
+      <Section heading="Content you submit">
+        <p>
+          If you submit a review, image or other content, you confirm that it is
+          your own, that it is not unlawful or offensive, and that you grant us
+          a non-exclusive, royalty-free licence to display it in connection with
+          the product concerned. We may remove content that breaches these
+          terms.
+        </p>
+      </Section>
 
-        <section className="mb-12">
-          <h2 className="text-[12px] lg:text-[14px] sm:text-[15px] font-bold uppercase tracking-wide text-neutral-950 mb-4">
-            Online exchanges and/or returns policy
-          </h2>
-          <div className="space-y-4 text-[12px] lg:text-[14px] sm:text-[12px] lg:text-[14px] text-neutral-900 leading-[1.8] font-normal">
-            <h3 className="text-xs lg:text-sm sm:text-[12px] lg:text-[14px] font-bold text-neutral-900">Exchange and/or returns conditions</h3>
-            <p>
-              The Customer has the right to withdraw from the purchase and return the product(s) purchased and/or exchange their size (except for the products described in clause 6.2. below), without the need for justification, within 30 calendar days from the dispatch date. If the products in their confirmed order are delivered separately, on different dates, the dispatch date of the last product shall apply for the purposes of the return.
-            </p>
-            <p>
-              Bacoola cannot accept exchanges or returns of used or damaged items (except in the case of flaws). For reasons of hygiene, underwear and swimwear items are fitted with a safety seal to prevent them being tried on or worn. If you wish to return this type of item, the label and the safety seal must remain intact.
-            </p>
-            <p>Face masks cannot be exchanged or returned for health and safety reasons.</p>
-            <p>For reasons of hygiene, earrings cannot be exchanged or returned.</p>
-            <p>It is not possible to change one model for another: it is only possible to exchange it for a different size. To exchange one item for another, you must follow the refund procedure and make a new purchase.</p>
-            <p>
-              All returns of purchased items must be carefully packaged and include a duly completed delivery note or returns form.<br />
-              If you do not have said delivery note when making the exchange or return, you can download the returns form by accessing the order page.
-            </p>
-            <p>The in-store purchases can only be exchanged, returns are not accepted.</p>
-            <p>
-              Bacoola reserves the right to review and evaluate each claim related to undelivered or incomplete orders. If reasonable indications of improper and/or fraudulent use of the Website are detected in the fulfilment of such orders, Bacoola may refuse the refund request and temporarily suspend the Customer's account.
-            </p>
-          </div>
-        </section>
+      <Section heading="Liability">
+        <p>
+          Nothing in these terms excludes or limits our liability where it
+          cannot lawfully be excluded or limited, including liability for death
+          or personal injury caused by our negligence, for fraud, or under the
+          Consumer Protection Act, 2019.
+        </p>
+        <p>
+          Subject to that, our total liability in connection with an order is
+          limited to the amount you paid for that order, and we are not liable
+          for indirect or consequential loss.
+        </p>
+      </Section>
 
-        <section className="mb-12">
-          <h2 className="text-[12px] lg:text-[14px] sm:text-[15px] font-bold uppercase tracking-wide text-neutral-950 mb-4">
-            Contact
-          </h2>
-          <div className="space-y-4 text-[12px] lg:text-[14px] sm:text-[12px] lg:text-[14px] text-neutral-900 leading-[1.8] font-normal">
-            <p>For any queries or suggestions, you may contact Bacoola by e-mail or by post at the following address:</p>
-            <p>
-              Bacoola<br />
-              Dpto. de Atención al Cliente<br />
-              Via Augusta, 10<br />
-              Pol. Ind. Riera de Caldes<br />
-              C.P. 08184 Palau-solità i Plegamans<br />
-              Barcelona (Spain)
-            </p>
-            <p>
-              The Customer Services telephone number is: +34 93 860 24 24. The office hours are Monday to Friday from 9am to 8:30pm Spanish local time (international call).
-            </p>
-          </div>
-        </section>
+      <Section heading="Events outside our control">
+        <p>
+          We are not liable for delay or failure to perform caused by events
+          beyond our reasonable control, including natural disasters, strikes,
+          civil unrest, epidemics, failures of public infrastructure, and
+          restrictions imposed by government authorities. Where such an event
+          occurs we will contact you, and you may cancel any affected order for
+          a full refund.
+        </p>
+      </Section>
 
-      </div>
-    </div>
+      <Section heading="Governing law and jurisdiction">
+        <p>
+          These terms are governed by the laws of India. The courts at{" "}
+          {LEGAL.jurisdiction.city}, {LEGAL.jurisdiction.state} shall have
+          exclusive jurisdiction over any dispute arising out of them, without
+          prejudice to any right you may have to approach a consumer forum
+          having jurisdiction under the Consumer Protection Act, 2019.
+        </p>
+      </Section>
+
+      <Section heading="Grievance redressal">
+        <GrievanceOfficer />
+        <p>
+          You may also raise a complaint with the National Consumer Helpline on
+          1915 or through the INGRAM portal maintained by the Department of
+          Consumer Affairs.
+        </p>
+      </Section>
+
+      <Section heading="Changes to these terms">
+        <p>
+          We may amend these terms. The version that applies to your order is
+          the version published on this page at the time you place it, and the
+          date it last changed is shown at the top.
+        </p>
+      </Section>
+
+      <Section heading="Contact">
+        <p>
+          For any query relating to these terms, or to an order, write to us at{" "}
+          <a
+            href={`mailto:${LEGAL.email}`}
+            className="font-bold underline underline-offset-[3px] decoration-[1.5px] text-neutral-950 hover:text-neutral-500 transition-colors"
+          >
+            {LEGAL.email}
+          </a>
+          , call {LEGAL.phone}, or use our{" "}
+          <PolicyLink href="/contact">Contact</PolicyLink> page.
+        </p>
+      </Section>
+    </LegalPage>
   )
 }

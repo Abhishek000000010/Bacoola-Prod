@@ -96,6 +96,15 @@ export default function Footer() {
         </a>
       </div>
 
+      {/* Every href here is a route that exists. This grid once pointed at
+          /company, /careers, /press, /outlet, /sitemap, /responsibility and
+          /stores while none of them had been built, so all seven 404'd. The
+          pages exist now; if a link is added here in future, build the page
+          first.
+
+          Twelve links over four columns, so three each -- the split used to be
+          4/4/2/2, which left the right half of the footer visibly short. Keep it
+          even when adding or removing a link. */}
       <div className="mx-auto grid w-full max-w-none grid-cols-1 sm:grid-cols-2 justify-items-start gap-x-8 gap-y-5 px-8 py-12 sm:gap-y-12 sm:px-10 sm:py-16 md:grid-cols-4 xl:px-12">
         <div className="flex flex-col items-start gap-y-5">
           <LocalizedClientLink href="/help" className={footerLinkClass}>
@@ -104,8 +113,20 @@ export default function Footer() {
           <LocalizedClientLink href="/account/orders" className={footerLinkClass}>
             My Purchases
           </LocalizedClientLink>
-          <LocalizedClientLink href="/help" className={footerLinkClass}>
+          <LocalizedClientLink href="/returns" className={footerLinkClass}>
             Returns
+          </LocalizedClientLink>
+        </div>
+
+        <div className="flex flex-col items-start gap-y-5">
+          <LocalizedClientLink href="/contact" className={footerLinkClass}>
+            Contact Us
+          </LocalizedClientLink>
+          <LocalizedClientLink href="/stores" className={footerLinkClass}>
+            Stores
+          </LocalizedClientLink>
+          <LocalizedClientLink href="/sitemap" className={footerLinkClass}>
+            Site Map
           </LocalizedClientLink>
         </div>
 
@@ -122,20 +143,17 @@ export default function Footer() {
         </div>
 
         <div className="flex flex-col items-start gap-y-5">
-          <LocalizedClientLink href="/outlet" className={footerLinkClass}>
-            Bacoola Outlet
-          </LocalizedClientLink>
-          <LocalizedClientLink href="/sitemap" className={footerLinkClass}>
-            Site Map
-          </LocalizedClientLink>
           <LocalizedClientLink href="/responsibility" className={footerLinkClass}>
             Responsibility
           </LocalizedClientLink>
-        </div>
-
-        <div className="flex flex-col items-start gap-y-5">
-          <LocalizedClientLink href="/stores" className={footerLinkClass}>
-            Stores
+          <LocalizedClientLink href="/shipping-policy" className={footerLinkClass}>
+            Shipping Policy
+          </LocalizedClientLink>
+          <LocalizedClientLink
+            href="/refund-and-cancellation-policy"
+            className={footerLinkClass}
+          >
+            Refunds and Cancellations
           </LocalizedClientLink>
         </div>
       </div>
@@ -146,7 +164,7 @@ export default function Footer() {
             <LocalizedClientLink href="/privacy-policy" className={footerLinkClass}>
               Privacy Policy and Cookies
             </LocalizedClientLink>
-            <LocalizedClientLink href="/terms-conditions" className={footerLinkClass}>
+            <LocalizedClientLink href="/terms-and-conditions" className={footerLinkClass}>
               Terms and Conditions
             </LocalizedClientLink>
             <LocalizedClientLink href="/ethics" className={footerLinkClass}>

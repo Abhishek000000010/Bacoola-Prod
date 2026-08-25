@@ -8,8 +8,6 @@ import GridToggle from "@modules/store/components/grid-toggle"
 
 import PaginatedProducts from "./paginated-products"
 
-import CategorySubmenuBar from "@modules/categories/components/category-submenu-bar"
-
 const StoreTemplate = ({
   sortBy,
   page,
@@ -31,14 +29,20 @@ const StoreTemplate = ({
     <div className="w-full" data-testid="category-container">
 
       <div className="px-4 md:px-8 pt-6 pb-2">
+        {/* This route is the WHOLE catalogue -- PaginatedProducts runs with no
+            category filter -- so the heading has to say so. It read "MEN'S SALE"
+            for as long as the page has existed: a hardcoded leftover from
+            building the men's sale page on this template, shown above a grid of
+            women's, teen and kids products.
+
+            The category submenu bar was removed for the same reason. It has no
+            category to derive tabs from here, so it fell through to its
+            DEFAULT_MEN_TABS fallback and rendered a men-only filter strip
+            (SHIRTS, POLOS, SUITS...) over that same mixed grid. Browsing by
+            section is what the header nav is for. */}
         <h1 className="text-xl md:text-2xl font-bold mb-4 tracking-wide uppercase" data-testid="store-page-title">
-          MEN&apos;S SALE
+          All products
         </h1>
-
-        {/* Interactive Categories Submenu Bar */}
-        <CategorySubmenuBar />
-
-        {/* Filter & Order Header */}
 
         {/* Filter & Order Header */}
         <div className="flex justify-between items-center mb-2 text-sm font-medium tracking-wide">

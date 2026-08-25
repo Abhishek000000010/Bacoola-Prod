@@ -109,7 +109,7 @@ const AccountNav = ({
       </div>
       <div className="hidden small:block w-full max-w-[230px]" data-testid="account-nav">
         <div className="flex flex-col gap-y-10">
-          <div className="text-[12px] lg:text-[14px] font-semibold uppercase tracking-[0.01em] text-[#111111]">
+          <div className="text-[12px] font-semibold uppercase tracking-[0.01em] text-[#111111]">
             Hello {customer?.first_name || "Customer"}
           </div>
           
@@ -162,7 +162,7 @@ const AccountNav = ({
             <li>
               <LocalizedClientLink
                 href="/wishlist"
-                className="text-[12px] lg:text-[14px] xl:text-[12px] lg:text-[14px] font-medium uppercase tracking-[0.02em] text-[#111111] hover:text-[#555555] transition-colors"
+                className="text-[12px] font-semibold uppercase tracking-[0.01em] text-[#111111] hover:text-[#555555] transition-colors"
               >
                 Wishlist
               </LocalizedClientLink>
@@ -171,7 +171,7 @@ const AccountNav = ({
               <button
                 type="button"
                 onClick={handleLogout}
-                className="text-[12px] lg:text-[14px] font-semibold uppercase tracking-[0.01em] text-[#111111] hover:text-[#555555] transition-colors focus:outline-none"
+                className="text-[12px] font-semibold uppercase tracking-[0.01em] text-[#111111] hover:text-[#555555] transition-colors focus:outline-none"
                 data-testid="logout-button"
               >
                 Sign out
@@ -203,7 +203,7 @@ const AccountNavLink = ({
   return (
     <LocalizedClientLink
       href={href}
-      className={clx("text-[12px] lg:text-[14px] font-semibold uppercase tracking-[0.01em] text-[#111111] transition-colors", {
+      className={clx("text-[12px] font-semibold uppercase tracking-[0.01em] text-[#111111] transition-colors", {
         "font-bold": active,
         "font-semibold hover:text-[#555555]": !active,
       })}
