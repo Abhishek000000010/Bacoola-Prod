@@ -22,11 +22,27 @@ import sgMail from "@sendgrid/mail"
 
 type Logger = { info: (m: string) => void; warn: (m: string) => void; error: (m: string) => void }
 
+/**
+ * One file to hang off the message.
+ *
+ * `content` is raw bytes; the base64 encoding SendGrid's API requires happens
+ * in sendEmail(), so no caller has to remember it. Keep attachments small —
+ * SendGrid caps a whole message at 30 MB *after* base64 expansion (~22 MB of
+ * real bytes), and mailbox providers reject well below that.
+ */
+export type EmailAttachment = {
+  filename: string
+  content: Buffer
+  /** MIME type, e.g. "application/pdf". */
+  contentType: string
+}
+
 export type SendEmailInput = {
   to: string | string[]
   subject: string
   html: string
   text?: string
+  attachments?: EmailAttachment[]
 }
 
 let configured = false
@@ -68,9 +84,18 @@ export async function sendEmail(logger: Logger, input: SendEmailInput): Promise<
       html: input.html,
       // SendGrid recommends a plain-text part too; fall back to a stripped body.
       text: input.text ?? input.html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
+      attachments: input.attachments?.map((a) => ({
+        filename: a.filename,
+        type: a.contentType,
+        content: a.content.toString("base64"),
+        disposition: "attachment",
+      })),
     })
     const recipients = Array.isArray(input.to) ? input.to.join(", ") : input.to
-    logger.info(`[email] sent "${input.subject}" to ${recipients}`)
+    const files = input.attachments?.length
+      ? ` with ${input.attachments.map((a) => a.filename).join(", ")}`
+      : ""
+    logger.info(`[email] sent "${input.subject}" to ${recipients}${files}`)
     return true
   } catch (err: any) {
     // SendGrid returns useful detail on err.response.body; surface it.

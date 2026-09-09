@@ -57,3 +57,5 @@ Thumbs.db
 
 # Temporary database test scripts
 **/test_db.js
+# Local invoice renders from scripts/preview-invoice.ts
+apps/backend/invoice-previews/

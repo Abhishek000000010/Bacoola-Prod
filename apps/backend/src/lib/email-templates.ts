@@ -15,6 +15,9 @@ type OrderLike = {
   email?: string
   currency_code?: string
   created_at?: string | Date
+  /** Gross, before discounts — the figure a "Subtotal" line must show. */
+  item_subtotal?: number
+  /** Net of discounts. Never label this "Subtotal". */
   item_total?: number
   shipping_total?: number
   tax_total?: number
@@ -141,9 +144,15 @@ function totalsBlock(order: OrderLike): string {
   }
   const discount = toNum(order.discount_total)
   const tax = toNum(order.tax_total)
+  // `item_total` is ALREADY NET of discounts. Showing it as "Subtotal" next to a
+  // separate discount line subtracts the discount twice on the face of the
+  // email: order #57 read 2890 - 1000 + 99 against a stated total of 2989. The
+  // gross figure is `item_subtotal`; fall back to the net one only when the
+  // query did not ask for it, in which case there is no discount row either.
+  const grossItems = toNum(order.item_subtotal) || toNum(order.item_total) + discount
   return `
     <table style="width:100%;border-collapse:collapse;font-size:14px;margin-top:12px">
-      ${row("Subtotal", toNum(order.item_total))}
+      ${row("Subtotal", grossItems)}
       ${discount ? row("Discount", -Math.abs(discount)) : ""}
       ${row("Shipping", toNum(order.shipping_total))}
       ${tax ? row("Tax", tax) : ""}
@@ -196,6 +205,9 @@ export function buildCustomerOrderEmail(order: OrderLike): { subject: string; ht
     <p style="font-size:14px;color:#555;margin:0 0 20px">
       We've received your order <strong>${esc(num)}</strong> and your payment was successful.
       We'll send another note when it ships.
+    </p>
+    <p style="font-size:14px;color:#555;margin:0 0 20px">
+      Your invoice is attached to this email as a PDF.
     </p>
     ${itemsTable(order)}
     ${totalsBlock(order)}
