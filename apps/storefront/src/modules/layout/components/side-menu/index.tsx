@@ -50,6 +50,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ regions, locales, currentLocale, ca
       {/* Trigger Button */}
       <button
         data-testid="nav-menu-button"
+        aria-label="Menu"
         onClick={openDrawer}
         className="relative h-full flex items-center transition-all ease-out duration-200 focus:outline-none hover:opacity-70"
       >
