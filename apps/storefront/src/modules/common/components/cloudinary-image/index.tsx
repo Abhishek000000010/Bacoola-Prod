@@ -15,6 +15,11 @@ interface CloudinaryImageProps extends Omit<React.ImgHTMLAttributes<HTMLImageEle
   mobileAspectRatio?: string
   useGravityAuto?: boolean
   objectFit?: "cover" | "contain" | "fill" | "scale-down" | "none"
+  /**
+   * WebP copies for screens under 1024px (the site's mobile layout). Wider
+   * screens ignore it and load `src` exactly as before.
+   */
+  mobileSource?: { srcSet: string; sizes: string }
 }
 
 /**
@@ -69,6 +74,7 @@ export const CloudinaryImage: React.FC<CloudinaryImageProps> = ({
   useGravityAuto = false,
   objectFit = "cover",
   sizes,
+  mobileSource,
   ...rest
 }) => {
   // Local fallback if no image provided
@@ -113,6 +119,16 @@ export const CloudinaryImage: React.FC<CloudinaryImageProps> = ({
 
   return (
     <picture>
+      {/* Phones and tablets, when the caller supplies their own copies */}
+      {mobileSource && (
+        <source
+          media="(max-width: 1023px)"
+          type="image/webp"
+          srcSet={mobileSource.srcSet}
+          sizes={mobileSource.sizes}
+        />
+      )}
+
       {/* Desktop */}
       {desktopSrcSet && (
         <source

@@ -1,0 +1,21 @@
+# Bacoola
+
+> Shop Bacoola for women's, men's, teen and kids' fashion: timeless essentials and modern luxury pieces, with delivery across India.
+
+## Shop
+- [Women](https://bacoola.com/in/landingpage/women)
+- [Men](https://bacoola.com/in/landingpage/men)
+- [Teen](https://bacoola.com/in/landingpage/teen)
+- [Kids](https://bacoola.com/in/landingpage/kids)
+
+## Help
+- [Help centre](https://bacoola.com/in/help)
+- [Shipping policy](https://bacoola.com/in/shipping-policy)
+- [Refunds and cancellations](https://bacoola.com/in/refund-and-cancellation-policy)
+- [Contact us](https://bacoola.com/in/contact)
+- [Store locator](https://bacoola.com/in/stores)
+
+## Company
+- [About Bacoola](https://bacoola.com/in/company)
+- [Privacy and cookie policy](https://bacoola.com/in/privacy-policy)
+- [Terms and conditions](https://bacoola.com/in/terms-and-conditions)

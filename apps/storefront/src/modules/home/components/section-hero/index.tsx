@@ -14,16 +14,38 @@ const serif = Newsreader({
   variable: "--font-hero-serif",
 })
 
+// Must match scripts/build-mobile-hero-images.mjs, which makes the files.
+const MOBILE_WIDTHS = [640, 960, 1280, 1600]
+
+/**
+ * The WebP copies screens under 1024px load instead of the original JPG.
+ * Every photo is mounted at once for the crossfade, so a phone downloads all
+ * four up front; at full size that was 1.2 MB and held back the first one.
+ * `width` and `height` are the original's.
+ */
+function mobileSource(name: string, width: number, height: number) {
+  const widths = [...MOBILE_WIDTHS.filter((w) => w < width), width]
+
+  return {
+    srcSet: widths
+      .map((w) => `/images/mobile/${name}-${w}.webp ${w}w`)
+      .join(", "),
+    // On a portrait screen the photo fills the hero's height and spills past
+    // its width, so the width it's drawn at follows the viewport height.
+    sizes: `max(100vw, calc((100vh - 56px) * ${(width / height).toFixed(3)}))`,
+  }
+}
+
 /**
  * One entry per root section. The first one is what shows on load; hovering
  * (or focusing) a link crossfades the background to that section's image, and
  * it stays there until another link is hovered.
  */
 const SECTIONS = [
-  { key: "women", label: "Women", href: "/landingpage/women", image: "/images/hero-vacation.jpg" },
-  { key: "men", label: "Men", href: "/landingpage/men", image: "/images/hero-arrivals.jpg" },
-  { key: "teen", label: "Teen", href: "/landingpage/teen", image: "/images/campaign-8.jpg" },
-  { key: "kids", label: "Kids", href: "/landingpage/kids", image: "/images/campaign-4.jpg" },
+  { key: "women", label: "Women", href: "/landingpage/women", image: "/images/hero-vacation.jpg", mobile: mobileSource("hero-vacation", 1600, 2406) },
+  { key: "men", label: "Men", href: "/landingpage/men", image: "/images/hero-arrivals.jpg", mobile: mobileSource("hero-arrivals", 1600, 1878) },
+  { key: "teen", label: "Teen", href: "/landingpage/teen", image: "/images/campaign-8.jpg", mobile: mobileSource("campaign-8", 1200, 800) },
+  { key: "kids", label: "Kids", href: "/landingpage/kids", image: "/images/campaign-4.jpg", mobile: mobileSource("campaign-4", 1200, 800) },
 ]
 
 /** Full-bleed home hero: a serif headline over a section-switching backdrop. */
@@ -49,6 +71,7 @@ export default function SectionHero() {
         >
           <CloudinaryImage
             src={section.image}
+            mobileSource={section.mobile}
             alt=""
             priority={index === 0}
             className="h-full w-full object-cover object-center"
