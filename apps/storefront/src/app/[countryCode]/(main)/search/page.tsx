@@ -16,7 +16,8 @@ import { HttpTypes } from "@medusajs/types"
 
 export const metadata: Metadata = {
   title: "Search",
-  description: "Search for products.",
+  description: "Search Bacoola for clothing, shoes and accessories for women, men, teens and kids.",
+  robots: { index: false, follow: true },
 }
 
 // Reads searchParams (q / cat / filters / sort / page), so render on demand.

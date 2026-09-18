@@ -1,6 +1,62 @@
+"use client"
+
 import CloudinaryImage from "@modules/common/components/cloudinary-image"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import React from "react"
+import { useResponsiveGap, useStickyCaption, getStickyCaptionStyle } from "@modules/common/hooks/use-sticky-caption"
+import React, { useRef } from "react"
+
+const CAPTION_GAP_MOBILE = 24 // matches the original bottom-6
+const CAPTION_GAP_MD = 32 // matches the original md:bottom-8
+
+interface DoubleCampaignColumnProps {
+  title: string
+  image: string
+  ctaText: string
+  link: string
+}
+
+const DoubleCampaignColumn: React.FC<DoubleCampaignColumnProps> = ({ title, image, ctaText, link }) => {
+  const columnRef = useRef<HTMLDivElement>(null)
+  const gap = useResponsiveGap(CAPTION_GAP_MOBILE, CAPTION_GAP_MD)
+  const { phase, stuckMetrics } = useStickyCaption(columnRef, gap)
+  const captionStyle = getStickyCaptionStyle(phase, stuckMetrics, gap)
+
+  return (
+    // No fixed/overflow-hidden height here -- taller than one viewport
+    // (h-[160vh]) so the caption can stick while scrolling past; the grid's
+    // own row height simply follows that.
+    <div ref={columnRef} className="relative h-[160vh] w-full group">
+      {/* Image sits in its own overflow-hidden wrapper so the hover-zoom
+          still clips -- overflow-hidden on this column itself (an ancestor
+          of the caption below) would clip the "stuck" phase's fixed
+          positioning too. */}
+      <div className="absolute inset-0 w-full h-full overflow-hidden flex [&>picture]:w-full [&>picture]:h-full">
+        <CloudinaryImage
+          src={image}
+          alt={title}
+          className="object-cover object-center transition-transform duration-1000 ease-out group-hover:scale-[1.02] w-full h-full"
+        />
+      </div>
+
+      <div
+        style={captionStyle}
+        className={`z-20 select-none px-6 md:px-8 flex justify-between items-end transition-opacity duration-700 ease-out ${
+          phase === "hidden" ? "opacity-0" : "opacity-100"
+        }`}
+      >
+        <h2 className="text-[12px] lg:text-[14px] font-bold uppercase text-[#FDFDFD] leading-none">
+          {title}
+        </h2>
+        <LocalizedClientLink
+          href={link}
+          className="text-[12px] lg:text-[14px] font-bold uppercase text-[#FDFDFD] leading-none hover:text-neutral-300 transition-colors duration-300"
+        >
+          {ctaText}
+        </LocalizedClientLink>
+      </div>
+    </div>
+  )
+}
 
 interface DoubleCampaignProps {
   leftTitle: string
@@ -20,52 +76,9 @@ const DoubleCampaign: React.FC<DoubleCampaignProps> = ({
   link = "/store",
 }) => {
   return (
-    <section className="w-full h-[100vh] md:h-screen grid grid-cols-1 grid-rows-2 md:grid-rows-1 md:grid-cols-2 bg-white overflow-hidden relative">
-      {/* Left Column */}
-      <div className="relative h-full w-full group overflow-hidden flex [&>picture]:w-full [&>picture]:h-full">
-        <CloudinaryImage
-          src={leftImage}
-          alt={leftTitle}
-          className="object-cover object-center transition-transform duration-1000 ease-out group-hover:scale-[1.02] w-full h-full"
-        />
-
-        <div className="absolute bottom-6 left-6 md:bottom-8 md:left-8 z-20 select-none">
-          <h2 className="text-[12px] lg:text-[14px] font-bold uppercase text-[#FDFDFD] leading-none">
-            {leftTitle}
-          </h2>
-        </div>
-        <div className="absolute bottom-6 right-6 md:bottom-8 md:right-8 z-20 select-none">
-          <LocalizedClientLink
-            href={link}
-            className="text-[12px] lg:text-[14px] font-bold uppercase text-[#FDFDFD] leading-none hover:text-neutral-300 transition-colors duration-300"
-          >
-            {ctaText}
-          </LocalizedClientLink>
-        </div>
-      </div>
-
-      {/* Right Column */}
-      <div className="relative h-full w-full group overflow-hidden flex [&>picture]:w-full [&>picture]:h-full">
-        <CloudinaryImage
-          src={rightImage}
-          alt={rightTitle}
-          className="object-cover object-center transition-transform duration-1000 ease-out group-hover:scale-[1.02] w-full h-full"
-        />
-
-        <div className="absolute bottom-6 left-6 md:bottom-8 md:left-8 z-20 select-none">
-          <h2 className="text-[12px] lg:text-[14px] font-bold uppercase text-[#FDFDFD] leading-none">
-            {rightTitle}
-          </h2>
-        </div>
-        <div className="absolute bottom-6 right-6 md:bottom-8 md:right-8 z-20 select-none">
-          <LocalizedClientLink
-            href={link}
-            className="text-[12px] lg:text-[14px] font-bold uppercase text-[#FDFDFD] leading-none hover:text-neutral-300 transition-colors duration-300"
-          >
-            {ctaText}
-          </LocalizedClientLink>
-        </div>
-      </div>
+    <section className="w-full grid grid-cols-1 grid-rows-2 md:grid-rows-1 md:grid-cols-2 bg-white relative">
+      <DoubleCampaignColumn title={leftTitle} image={leftImage} ctaText={ctaText} link={link} />
+      <DoubleCampaignColumn title={rightTitle} image={rightImage} ctaText={ctaText} link={link} />
     </section>
   )
 }

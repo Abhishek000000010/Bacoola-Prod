@@ -1,8 +1,10 @@
 import { Metadata } from "next"
 import { Suspense } from "react"
 import { notFound } from "next/navigation"
+import { getResolvedLook } from "@lib/data/look"
 import { listProducts } from "@lib/data/products"
 import { getRegion, listRegions } from "@lib/data/regions"
+import { SITE_NAME, toMetaDescription } from "@lib/util/seo"
 import CustomProductDetails from "@modules/products/templates/CustomProductDetails"
 import RecommendedProducts from "@modules/products/components/recommended-products"
 import { HttpTypes } from "@medusajs/types"
@@ -60,12 +62,25 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     notFound()
   }
 
+  const description =
+    toMetaDescription(product.description) ??
+    `Shop ${product.title} at ${SITE_NAME}. Choose your size and colour and order online with delivery across India.`
+
   return {
-    title: `${product.title} | Medusa Store`,
-    description: `${product.title}`,
+    title: product.title,
+    description,
+    // `?v_id=` variant links render the same product; point them all at one URL.
+    alternates: {
+      canonical: `/${params.countryCode}/products/${handle}`,
+    },
+    // openGraph replaces the root layout's object wholesale and the title
+    // template doesn't reach it, so the brand is spelled out here.
     openGraph: {
-      title: `${product.title} | Medusa Store`,
-      description: `${product.title}`,
+      title: `${product.title} | ${SITE_NAME}`,
+      description,
+      siteName: SITE_NAME,
+      type: "website",
+      locale: "en_IN",
       images: product.thumbnail ? [product.thumbnail] : [],
     },
   }
@@ -94,6 +109,9 @@ export default async function ProductPage(props: Props) {
   }
 
   const images = getImagesForVariant(pricedProduct, selectedVariantId)
+  // Only products with a curated look pay for this; the rest return null
+  // without a request.
+  const look = await getResolvedLook(pricedProduct, params.countryCode)
 
   return (
     <Suspense fallback={null}>
@@ -102,6 +120,7 @@ export default async function ProductPage(props: Props) {
         region={region}
         countryCode={params.countryCode}
         images={images ?? []}
+        look={look}
       />
       <Suspense fallback={null}>
         <RecommendedProducts

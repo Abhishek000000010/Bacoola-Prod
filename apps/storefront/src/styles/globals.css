@@ -39,6 +39,13 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
 }
 
+/* One underline weight site-wide, matching .nav-underline. Left to the font,
+   `underline` on bold text draws noticeably heavier. Zero specificity, so a
+   `decoration-*` utility can still override it deliberately. */
+:where(*) {
+  text-decoration-thickness: 1px;
+}
+
 /* One hover speed for every button on the site: Tailwind's default 150ms reads
    as a snap rather than a fade. The element+class selectors outrank the
    `duration-*` utilities, and only buttons that already opt into a transition
@@ -167,8 +174,11 @@ button.transition-opacity,
     right: 0;
     /* ~0.5rem below the text, matching Mango's text-underline-offset */
     bottom: -4px;
-    height: 1px;
-    background-color: currentColor;
+    /* A border, not a 1px background: borders snap to whole device pixels, so
+       the line stays hairline-thin at 125%/150% display scaling instead of
+       smearing across two pixels and looking bolder on some links. */
+    height: 0;
+    border-bottom: 1px solid currentColor;
     opacity: 0;
     /* Fades in/out with Mango's easing instead of the old scaleX wipe. */
     transition: opacity 0.5s cubic-bezier(0.3, 0.85, 0.5, 1);

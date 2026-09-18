@@ -1,16 +1,14 @@
 import { Metadata } from "next"
 
-import Hero from "@modules/home/components/hero"
-import EditorialFlow from "@modules/home/components/editorial-flow"
-import FeaturedProductsShowcase from "@modules/home/components/featured-products/showcase"
+import SectionHero from "@modules/home/components/section-hero"
 
 import { listCollections } from "@lib/data/collections"
 import { getRegion } from "@lib/data/regions"
 
 export const metadata: Metadata = {
-  title: "Bacoola Store | Modern Essentials & Luxury Couture",
+  title: { absolute: "Bacoola | Modern Essentials & Luxury Couture" },
   description:
-    "Discover timeless fashion essentials crafted for modern living and everyday luxury. Shop our new Summer Collection.",
+    "Discover Bacoola's timeless essentials and modern luxury fashion for women, men, teens and kids. Shop new arrivals online with delivery across India.",
 }
 
 export default async function Home(props: {
@@ -31,17 +29,9 @@ export default async function Home(props: {
     return null
   }
 
-  // Removed unused priced products retrieval
-
-  return (
-    <>
-      {/* 1. Cinematic Hero Slider */}
-      <Hero />
-
-      {/* 2. Magazine-like Editorial Campaign Flow */}
-      <EditorialFlow />
-    </>
-  )
+  // One full-bleed hero and nothing else: the page goes straight from it to
+  // the newsletter sign-up and footer.
+  return <SectionHero />
 }
 
 

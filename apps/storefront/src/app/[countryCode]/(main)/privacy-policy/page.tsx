@@ -11,7 +11,7 @@ import {
 } from "@modules/legal/components/layout"
 
 export const metadata: Metadata = {
-  title: "Privacy Policy",
+  title: "Privacy & Cookie Policy",
   description:
     "How Bacoola collects, uses, shares and protects your personal data, and the rights you have over it.",
 }
@@ -191,7 +191,7 @@ export default function PrivacyPolicy() {
           To exercise any of these rights, write to us at{" "}
           <a
             href={`mailto:${LEGAL.email}`}
-            className="font-bold underline underline-offset-[3px] decoration-[1.5px] text-neutral-950 hover:text-neutral-500 transition-colors"
+            className="font-bold underline underline-offset-[3px] decoration-1 text-neutral-950 hover:text-neutral-500 transition-colors"
           >
             {LEGAL.email}
           </a>
@@ -236,7 +236,7 @@ export default function PrivacyPolicy() {
           Questions about this policy can be sent to{" "}
           <a
             href={`mailto:${LEGAL.email}`}
-            className="font-bold underline underline-offset-[3px] decoration-[1.5px] text-neutral-950 hover:text-neutral-500 transition-colors"
+            className="font-bold underline underline-offset-[3px] decoration-1 text-neutral-950 hover:text-neutral-500 transition-colors"
           >
             {LEGAL.email}
           </a>{" "}

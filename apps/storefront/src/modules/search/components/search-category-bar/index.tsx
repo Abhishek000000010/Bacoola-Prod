@@ -39,8 +39,8 @@ export default function SearchCategoryBar({
         className={clx(
           "shrink-0 pb-1 text-[12px] lg:text-[14px] leading-none font-semibold uppercase tracking-wider transition-colors",
           activeCategoryHandle === "all" || !activeCategoryHandle
-            ? "border-b-2 border-black text-black"
-            : "border-b-2 border-transparent text-black hover:border-black"
+            ? "border-b border-black text-black"
+            : "border-b border-transparent text-black hover:border-black"
         )}
       >
         All
@@ -56,8 +56,8 @@ export default function SearchCategoryBar({
             className={clx(
               "shrink-0 pb-1 text-[12px] lg:text-[14px] leading-none font-semibold uppercase tracking-wider transition-colors",
               active
-                ? "border-b-2 border-black text-black"
-                : "border-b-2 border-transparent text-black hover:border-black"
+                ? "border-b border-black text-black"
+                : "border-b border-transparent text-black hover:border-black"
             )}
           >
             {cat.name}

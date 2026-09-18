@@ -101,7 +101,7 @@ export const HeaderLinks: React.FC<{ categories?: HttpTypes.StoreProductCategory
             key={label}
             onMouseEnter={() => handleMouseEnter(key)}
             onMouseLeave={handleMouseLeave}
-            className="h-full flex items-center"
+            className="h-full flex items-center relative z-[1000]"
           >
             <LocalizedClientLink
               href={href}

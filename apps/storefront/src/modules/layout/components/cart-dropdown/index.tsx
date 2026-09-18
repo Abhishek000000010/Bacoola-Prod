@@ -39,6 +39,18 @@ const CartDropdown = ({
     ?.slice()
     .sort((a, b) => ((a.created_at ?? "") > (b.created_at ?? "") ? -1 : 1))[0]
 
+  // Size first, then colour, then anything else -- whatever order the product
+  // happened to define its options in.
+  const optionRank = (title?: string) => {
+    const t = title?.toLowerCase() ?? ""
+    if (t.startsWith("size")) return 0
+    if (t.startsWith("colo")) return 1
+    return 2
+  }
+  const lastItemOptions = (lastItem?.variant?.options ?? [])
+    .slice()
+    .sort((a, b) => optionRank(a.option?.title) - optionRank(b.option?.title))
+
   const timedOpen = () => {
     open()
 
@@ -162,9 +174,9 @@ const CartDropdown = ({
                       })}
                     </span>
 
-                    {/* Size and colour, in the order the product defines them. */}
+                    {/* Size, then colour. */}
                     <div className="mt-4 flex gap-x-5 text-[12px] text-neutral-900" data-testid="cart-item-variant">
-                      {(lastItem.variant?.options ?? []).map((option) => (
+                      {lastItemOptions.map((option) => (
                         <span key={option.id}>{option.value}</span>
                       ))}
                     </div>
@@ -262,7 +274,7 @@ const CartDropdown = ({
                     </span>
 
                     <div className="mt-3 flex gap-x-5 text-[12px] text-neutral-900">
-                      {(lastItem.variant?.options ?? []).map((option) => (
+                      {lastItemOptions.map((option) => (
                         <span key={option.id}>{option.value}</span>
                       ))}
                     </div>

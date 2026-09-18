@@ -1,3 +1,4 @@
+import { NO_INDEX } from "@lib/util/seo"
 import { retrieveCartWithInventory } from "@lib/data/cart"
 import { retrieveCustomer } from "@lib/data/customer"
 import { listCartShippingMethods } from "@lib/data/fulfillment"
@@ -5,11 +6,11 @@ import CartTemplate from "@modules/cart/templates"
 import { listProducts, getRecommendedProducts } from "@lib/data/products"
 import { getRegion } from "@lib/data/regions"
 import { Metadata } from "next"
-import { notFound } from "next/navigation"
 
 export const metadata: Metadata = {
-  title: "Cart",
-  description: "View your cart",
+  title: "Shopping Bag",
+  description: "Review the items in your Bacoola shopping bag and continue to checkout.",
+  robots: NO_INDEX,
 }
 
 export default async function Cart(props: { params: Promise<{ countryCode: string }> }) {
@@ -24,11 +25,13 @@ export default async function Cart(props: { params: Promise<{ countryCode: strin
     getRegion(countryCode)
   ])
 
-  if (!cart) {
-    return notFound()
-  }
-
-  const shippingOptions = await listCartShippingMethods(cart.id).catch(() => null)
+  // A missing or stale cart cookie (cleared cookies, an expired/deleted cart)
+  // should render as an empty bag, not a 404. A real cart only gets created
+  // once the shopper adds something -- writing a fresh cart cookie here isn't
+  // possible anyway, since cookies can't be set during a page render.
+  const shippingOptions = cart
+    ? await listCartShippingMethods(cart.id).catch(() => null)
+    : null
 
   let recommendedProducts: any[] = []
   if (cart?.items?.length) {
@@ -39,7 +42,7 @@ export default async function Cart(props: { params: Promise<{ countryCode: strin
         ...(region?.id ? { regionId: region.id } : { countryCode }),
         tier: "full"
       }).catch(() => ({ response: { products: [] } }))
-      
+
       const productObj = response.products?.[0]
       if (productObj) {
         recommendedProducts = await getRecommendedProducts({
@@ -49,6 +52,13 @@ export default async function Cart(props: { params: Promise<{ countryCode: strin
         }).catch(() => [])
       }
     }
+  } else {
+    const { response } = await listProducts({
+      queryParams: { limit: 10, order: "-id" } as any,
+      ...(region?.id ? { regionId: region.id } : { countryCode }),
+      tier: "full"
+    }).catch(() => ({ response: { products: [] } }))
+    recommendedProducts = response.products ?? []
   }
 
   return (

@@ -14,7 +14,7 @@ export default function PreviewPrice({ price, isMobileLayout }: { price: Variant
             {price.original_price}
           </span>
         )}
-        <span className={price.price_type === "sale" ? "text-[#D01313] font-normal" : "text-black font-normal"}>
+        <span className={price.price_type === "sale" ? "text-sale font-normal" : "text-black font-normal"}>
           {price.calculated_price}
         </span>
       </div>
@@ -37,7 +37,7 @@ export default function PreviewPrice({ price, isMobileLayout }: { price: Variant
       )}
       <Text
         className={clx("!text-[12px] lg:text-[14px] text-ui-fg-muted", {
-          "text-ui-fg-interactive": price.price_type === "sale",
+          "!text-sale": price.price_type === "sale",
         })}
         data-testid="price"
       >

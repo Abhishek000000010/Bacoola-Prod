@@ -92,7 +92,7 @@ export default function ResponsibilityPage() {
           Write to{" "}
           <a
             href={`mailto:${LEGAL.email}`}
-            className="font-bold underline underline-offset-[3px] decoration-[1.5px] text-neutral-950 hover:text-neutral-500 transition-colors"
+            className="font-bold underline underline-offset-[3px] decoration-1 text-neutral-950 hover:text-neutral-500 transition-colors"
           >
             {LEGAL.email}
           </a>

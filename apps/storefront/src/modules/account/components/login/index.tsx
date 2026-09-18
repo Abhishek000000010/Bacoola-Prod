@@ -90,13 +90,13 @@ const Login = ({ setCurrentView }: Props) => {
                 if (emailError && validateEmail(e.target.value)) setEmailError(false)
               }}
               onBlur={handleEmailBlur}
-              className={`peer w-full h-[42px] px-4 pt-[20px] pb-[6px] border ${emailError ? 'border-[#b91c1c]' : 'border-black focus:border-black'} transition-colors focus:ring-0 focus:outline-none rounded-none text-sm leading-none text-black bg-transparent`}
+              className={`peer w-full h-[42px] px-4 pt-[22px] pb-[6px] border ${emailError ? 'border-[#b91c1c]' : 'border-black focus:border-black'} transition-colors focus:ring-0 focus:outline-none rounded-none text-[12px] lg:text-[14px] leading-none text-black bg-transparent`}
               data-testid="email-input"
             />
             <label
               htmlFor="email"
               data-no-global-float
-              className={`absolute left-4 top-[5px] z-10 text-[9px] leading-none transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-xs lg:text-sm peer-focus:top-[5px] peer-focus:translate-y-0 peer-focus:text-[9px] uppercase peer-placeholder-shown:normal-case peer-focus:!uppercase pointer-events-none ${
+              className={`absolute left-4 top-[7px] z-10 text-[12px] lg:text-[14px] leading-none transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-[7px] peer-focus:translate-y-0 pointer-events-none ${
                 emailError ? 'text-[#b91c1c]' : 'text-black'
               }`}
             >
@@ -126,13 +126,13 @@ const Login = ({ setCurrentView }: Props) => {
                 if (passwordError && e.target.value) setPasswordError(false)
               }}
               onBlur={handlePasswordBlur}
-              className={`peer w-full h-[42px] pl-4 pr-12 pt-[20px] pb-[6px] border ${passwordError ? 'border-[#b91c1c]' : 'border-black focus:border-black'} transition-colors focus:ring-0 focus:outline-none rounded-none text-sm leading-none text-black bg-transparent`}
+              className={`peer w-full h-[42px] pl-4 pr-12 pt-[22px] pb-[6px] border ${passwordError ? 'border-[#b91c1c]' : 'border-black focus:border-black'} transition-colors focus:ring-0 focus:outline-none rounded-none text-[12px] lg:text-[14px] leading-none text-black bg-transparent`}
               data-testid="password-input"
             />
             <label
               htmlFor="password"
               data-no-global-float
-              className={`absolute left-4 top-[5px] z-10 text-[9px] leading-none transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-xs lg:text-sm peer-focus:top-[5px] peer-focus:translate-y-0 peer-focus:text-[9px] uppercase peer-placeholder-shown:normal-case peer-focus:!uppercase pointer-events-none ${
+              className={`absolute left-4 top-[7px] z-10 text-[12px] lg:text-[14px] leading-none transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-[7px] peer-focus:translate-y-0 pointer-events-none ${
                 passwordError ? 'text-[#b91c1c]' : 'text-black'
               }`}
             >
@@ -191,12 +191,13 @@ const Login = ({ setCurrentView }: Props) => {
         </div>
       </form>
 
-      <a
-        href="#"
+      <button
+        type="button"
+        onClick={() => setCurrentView(LOGIN_VIEW.FORGOT_PASSWORD)}
         className="nav-underline w-fit text-[12px] lg:text-[14px] font-semibold tracking-wider text-black uppercase mt-8 transition-colors"
       >
         Forgotten your password?
-      </a>
+      </button>
     </div>
   )
 }

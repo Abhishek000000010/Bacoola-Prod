@@ -3,8 +3,9 @@ import { listCategories } from "@lib/data/categories"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 export const metadata: Metadata = {
-  title: "Site map",
-  description: "Every section of the Bacoola website in one place.",
+  title: "Site Map",
+  description:
+    "Every section of the Bacoola website in one place: shop by department and category, customer service, policies and company pages.",
 }
 
 /**

@@ -146,7 +146,7 @@ export function GrievanceOfficer() {
         <strong>Email:</strong>{" "}
         <a
           href={`mailto:${email}`}
-          className="font-bold underline underline-offset-[3px] decoration-[1.5px] text-neutral-950 hover:text-neutral-500 transition-colors"
+          className="font-bold underline underline-offset-[3px] decoration-1 text-neutral-950 hover:text-neutral-500 transition-colors"
         >
           {email}
         </a>
@@ -181,7 +181,7 @@ export function PolicyLink({
   return (
     <LocalizedClientLink
       href={href}
-      className="font-bold underline underline-offset-[3px] decoration-[1.5px] text-neutral-950 hover:text-neutral-500 transition-colors"
+      className="font-bold underline underline-offset-[3px] decoration-1 text-neutral-950 hover:text-neutral-500 transition-colors"
     >
       {children}
     </LocalizedClientLink>

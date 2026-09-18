@@ -3,7 +3,7 @@ import { STORES } from "@lib/legal-config"
 import StoreLocator from "@modules/stores/components/store-locator"
 
 export const metadata: Metadata = {
-  title: "Locate your store",
+  title: "Store Locator",
   description:
     "Find your nearest Bacoola store, with address, opening hours and directions.",
 }

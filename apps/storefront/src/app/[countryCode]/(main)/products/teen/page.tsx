@@ -1,4 +1,6 @@
+import { Metadata } from "next"
 import { notFound } from "next/navigation"
+import { categoryFallbackDescription, getDepartment } from "@lib/util/seo"
 import { getCategoryByHandle } from "@lib/data/categories"
 import CategoryProductListing from "@modules/categories/templates/CategoryProductListing"
 import { Suspense } from "react"
@@ -6,6 +8,22 @@ import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-g
 import PaginatedProducts from "@modules/store/templates/paginated-products"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import { parseOptionValueIds } from "@lib/util/product-option-filters"
+
+const department = getDepartment("teen")!
+const seoName = `All ${department.possessive} Clothing`
+
+export async function generateMetadata(props: {
+  params: Promise<{ countryCode: string }>
+}): Promise<Metadata> {
+  const { countryCode } = await props.params
+
+  return {
+    title: seoName,
+    description: categoryFallbackDescription(seoName.replace("All ", "all ")),
+    // Same listing as /categories/teen; keep one URL in search results.
+    alternates: { canonical: `/${countryCode}/categories/teen` },
+  }
+}
 
 type Props = {
   params: Promise<{

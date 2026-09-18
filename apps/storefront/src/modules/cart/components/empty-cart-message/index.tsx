@@ -1,23 +1,39 @@
-import { Heading, Text } from "@modules/common/components/ui"
+import { HttpTypes } from "@medusajs/types"
 
-import InteractiveLink from "@modules/common/components/interactive-link"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
-const EmptyCartMessage = () => {
+const EmptyCartMessage = ({ customer }: { customer?: HttpTypes.StoreCustomer | null }) => {
   return (
-    <div className="py-48 px-2 flex flex-col justify-center items-start" data-testid="empty-cart-message">
-      <Heading
-        level="h1"
-        className="flex flex-row text-3xl-regular gap-x-2 items-baseline"
-      >
-        Cart
-      </Heading>
-      <Text className="text-base-regular mt-4 mb-6 max-w-[32rem]">
-        You don&apos;t have anything in your cart. Let&apos;s change that, use
-        the link below to start browsing our products.
-      </Text>
-      <div>
-        <InteractiveLink href="/store">Explore products</InteractiveLink>
-      </div>
+    <div
+      className="py-16 px-4 lg:px-0 flex flex-col items-center text-center"
+      data-testid="empty-cart-message"
+    >
+      <h1 className="text-base lg:text-lg font-semibold uppercase tracking-wider text-black mb-6">
+        Your Shopping Bag is Empty
+      </h1>
+
+      {!customer && (
+        <div className="w-full max-w-[300px] flex flex-col items-center gap-y-4">
+          <span className="text-[12px] lg:text-[14px] text-neutral-900 font-medium">
+            Enjoy a faster shopping experience
+          </span>
+          <LocalizedClientLink
+            href="/account"
+            className="w-full h-[42px] flex items-center justify-center bg-black text-white font-semibold text-xs lg:text-sm tracking-wider uppercase hover:bg-neutral-800 transition-colors"
+          >
+            Sign In
+          </LocalizedClientLink>
+          <span className="text-[12px] lg:text-[14px] text-neutral-600">
+            Don&apos;t have an account?{" "}
+            <LocalizedClientLink
+              href="/account"
+              className="font-semibold text-black underline underline-offset-4 hover:text-neutral-600 transition-colors"
+            >
+              Create account
+            </LocalizedClientLink>
+          </span>
+        </div>
+      )}
     </div>
   )
 }

@@ -9,6 +9,24 @@
 
 const BRAND = process.env.EMAIL_BRAND_NAME || "Bacoola"
 
+/**
+ * Absolute URL to the storefront's hosted wordmark, derived from
+ * STOREFRONT_URL (e.g. "https://bacoola.com/in" → "https://bacoola.com/images/bacoola-logo.png").
+ * Email clients can't resolve relative paths or reach localhost, so this is
+ * `null` (falling back to a text wordmark) whenever STOREFRONT_URL is unset
+ * or isn't a real absolute URL — dev boxes, previews, etc.
+ */
+const LOGO_URL = (() => {
+  const raw = process.env.STOREFRONT_URL || ""
+  try {
+    const origin = new URL(raw).origin
+    if (!/^https?:$/.test(new URL(raw).protocol) || origin.includes("localhost")) return null
+    return `${origin}/images/bacoola-logo.png`
+  } catch {
+    return null
+  }
+})()
+
 type OrderLike = {
   id: string
   display_id?: number
@@ -178,15 +196,27 @@ function addressBlock(order: OrderLike): string {
     </div>`
 }
 
+/**
+ * Header: the wordmark logo when we have a reachable URL for it (its own dark
+ * type needs a light plate to sit on), otherwise a plain-text title — never
+ * both, and never a broken `<img>` in a client that blocks the request.
+ */
+function headerMark(): string {
+  if (LOGO_URL) {
+    return `<img src="${esc(LOGO_URL)}" alt="${esc(BRAND)}" width="132" height="32" style="display:block;margin:0 auto;width:132px;height:auto;border:0" />`
+  }
+  return `<span style="font-size:20px;font-weight:700;letter-spacing:0.02em;color:#111">${esc(BRAND)}</span>`
+}
+
 function shell(title: string, inner: string): string {
   return `
-  <div style="background:#f5f5f5;padding:24px 0;font-family:Arial,Helvetica,sans-serif;color:#222">
-    <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden">
-      <div style="background:#111;color:#fff;padding:20px 28px;font-size:18px;font-weight:700">${esc(BRAND)}</div>
-      <div style="padding:28px">
+  <div style="background:#f2f2f2;padding:32px 16px;font-family:Arial,Helvetica,sans-serif;color:#222">
+    <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06)">
+      <div style="padding:24px 28px;text-align:center;border-bottom:1px solid #eee">${headerMark()}</div>
+      <div style="padding:32px 28px">
         ${inner}
       </div>
-      <div style="padding:18px 28px;background:#fafafa;color:#999;font-size:12px;text-align:center">
+      <div style="padding:20px 28px;background:#fafafa;border-top:1px solid #eee;color:#999;font-size:12px;text-align:center;line-height:1.6">
         ${esc(title)} · ${esc(BRAND)}
       </div>
     </div>
@@ -252,6 +282,58 @@ export function buildRestockEmail(input: {
   }
 }
 
+/**
+ * Sent once when an address subscribes (or re-subscribes) to the newsletter.
+ * Every newsletter email must carry the unsubscribe link.
+ */
+export function buildNewsletterWelcomeEmail(input: {
+  shopUrl?: string | null
+  unsubscribeUrl: string
+}): { subject: string; html: string } {
+  const cta = input.shopUrl
+    ? `<a href="${esc(input.shopUrl)}" style="display:inline-block;margin-top:24px;background:#111;color:#fff;text-decoration:none;font-weight:700;font-size:14px;letter-spacing:0.02em;padding:14px 32px;border-radius:4px">Shop new arrivals</a>`
+    : ""
+
+  const perk = (label: string, text: string) => `
+    <td style="padding:28px 10px 0;text-align:center;vertical-align:top;width:33.33%">
+      <div style="font-size:13px;font-weight:700;color:#111;margin-bottom:4px">${esc(label)}</div>
+      <div style="font-size:12px;color:#888;line-height:1.5">${esc(text)}</div>
+    </td>`
+
+  const inner = `
+    <div style="text-align:center">
+      <div style="display:inline-block;font-size:11px;font-weight:700;letter-spacing:0.12em;color:#111;background:#f2f2f2;padding:6px 14px;border-radius:999px;text-transform:uppercase">Welcome</div>
+      <h1 style="font-size:24px;line-height:1.3;margin:18px 0 12px;color:#111">You're on the list</h1>
+      <p style="font-size:14px;color:#666;line-height:1.6;margin:0 auto;max-width:400px">
+        Thanks for joining the ${esc(BRAND)} newsletter. You'll be the first to hear about
+        new collections, launches and seasonal edits.
+      </p>
+      ${cta}
+    </div>
+
+    <div style="margin-top:36px;border-top:1px solid #eee"></div>
+
+    <table style="width:100%;border-collapse:collapse">
+      <tr>
+        ${perk("New arrivals", "First access before they go live")}
+        ${perk("Member offers", "Sales and seasonal discounts")}
+        ${perk("Style edits", "Curated looks and guides")}
+      </tr>
+    </table>
+
+    <div style="text-align:center;margin-top:32px">
+      <p style="font-size:12px;color:#999;margin:0 0 12px">
+        Didn't sign up, or changed your mind?
+      </p>
+      <a href="${esc(input.unsubscribeUrl)}" style="display:inline-block;background:#fff;color:#555;text-decoration:none;font-weight:700;font-size:12px;padding:10px 22px;border:1px solid #ddd;border-radius:4px">Unsubscribe</a>
+    </div>
+  `
+  return {
+    subject: `Welcome to the ${BRAND} newsletter`,
+    html: shell("Newsletter", inner),
+  }
+}
+
 /** Store-owner notification of a new paid order. */
 export function buildAdminOrderEmail(order: OrderLike): { subject: string; html: string } {
   const num = orderNumber(order)
@@ -309,6 +391,44 @@ export function buildAdminPasswordResetEmail(input: {
   `
   return {
     subject: `${BRAND} — reset your admin password`,
+    html: shell("Password reset", inner),
+  }
+}
+
+/**
+ * Customer-facing password-reset email, sent from the storefront's
+ * "forgotten your password?" flow. Same token/TTL mechanics as the admin
+ * reset above, just a different link target (the storefront's own
+ * /reset-password page instead of the admin dashboard).
+ */
+export function buildCustomerPasswordResetEmail(input: {
+  resetUrl: string
+  expiresInMinutes: number
+}): { subject: string; html: string } {
+  const inner = `
+    <h1 style="font-size:20px;margin:0 0 12px">Reset your password</h1>
+    <p style="font-size:14px;color:#555;margin:0 0 20px">
+      Someone asked to reset the password for your ${esc(BRAND)} account.
+      Click below to choose a new one.
+    </p>
+    <p style="margin:0 0 24px">
+      <a href="${esc(input.resetUrl)}"
+         style="display:inline-block;background:#111;color:#fff;text-decoration:none;padding:12px 22px;border-radius:4px;font-size:14px;font-weight:700">
+        Set a new password
+      </a>
+    </p>
+    <p style="font-size:13px;color:#777;margin:0 0 8px">
+      This link expires in ${input.expiresInMinutes} minutes and can only be used once.
+    </p>
+    <p style="font-size:13px;color:#777;margin:0 0 20px">
+      If you didn't ask for this, ignore this email — your password stays as it is.
+    </p>
+    <p style="font-size:12px;color:#aaa;margin:0;word-break:break-all">
+      If the button doesn't work, paste this into your browser:<br>${esc(input.resetUrl)}
+    </p>
+  `
+  return {
+    subject: `${BRAND} — reset your password`,
     html: shell("Password reset", inner),
   }
 }

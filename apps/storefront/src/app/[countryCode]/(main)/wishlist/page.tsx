@@ -1,3 +1,4 @@
+import { NO_INDEX } from "@lib/util/seo"
 import { Metadata } from "next"
 import { getRegion } from "@lib/data/regions"
 import { listProducts } from "@lib/data/products"
@@ -8,7 +9,8 @@ import WishlistClient from "@modules/wishlist/components/wishlist-client"
 
 export const metadata: Metadata = {
   title: "Wishlist",
-  description: "View and manage your saved items.",
+  description: "View and manage the items you've saved to your Bacoola wishlist.",
+  robots: NO_INDEX,
 }
 
 export default async function WishlistPage(props: {

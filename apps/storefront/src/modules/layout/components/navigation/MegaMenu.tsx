@@ -74,28 +74,38 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
   const expandedWidth = 530
   const baseWidth = 416
   const currentBaseWidth = lastCategory === "kids" ? 500 : baseWidth
+  const panelWidth = isOpen && level3Categories.length > 0 ? expandedWidth : currentBaseWidth
 
   return (
     <>
-      {/* 1. Backdrop Overlay */}
+      {/* 1. Backdrop -- one continuous element, full viewport, from x:0
+          immediately. Sits below the panel (z-998 < z-999), which always
+          masks it wherever the panel currently is -- during the open/close
+          slide AND during a width change (e.g. Teen's 416px -> Kids' 500px)
+          while already open. Because there's only one backdrop and one panel
+          (see below), there's no second element that could ever drift out of
+          sync with it. */}
       <div
         onClick={onMouseLeave}
-        className={`fixed top-[56px] left-0 right-0 bottom-0 z-[998] transition-opacity duration-300 ${
+        className={`fixed inset-0 z-[998] bg-black/30 transition-opacity duration-300 ${
           isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
       />
 
-      {/* 2. Mega Menu Container */}
+      {/* 2. Mega Menu Container -- extends up through the header (top-0, not
+          top-[56px]) so the SAME element that slides/resizes for the content
+          area also covers the header row. A spacer below reserves the header's
+          56px so the visible menu content still starts in the same place. */}
       <div
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
-        className={`fixed top-[56px] left-0 bottom-0 bg-white z-[999] transition-all duration-300 ease-out select-none flex flex-col overflow-visible ${
+        className={`fixed top-0 left-0 bottom-0 bg-white z-[999] transition-all duration-300 ease-out select-none flex flex-col overflow-visible ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
-        style={{ width: isOpen && level3Categories.length > 0 ? `${expandedWidth}px` : `${currentBaseWidth}px` }}
+        style={{ width: `${panelWidth}px` }}
       >
-        {/* Close button (always top right of the whole box) */}
-        <div className="absolute top-[-46px] right-4 z-50">
+        {/* Close button (always top right of the header row) */}
+        <div className="absolute top-[10px] right-4 z-50">
           <button
             onClick={onMouseLeave}
             className="p-2 text-neutral-400 hover:text-black transition-colors duration-200 focus:outline-none"
@@ -104,6 +114,10 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
             <XMark className="w-5 h-5 stroke-[1.2px]" />
           </button>
         </div>
+
+        {/* Header-height spacer so the tabs/columns below start at the same
+            spot they did when this box only covered the content area. */}
+        <div className="h-[56px] shrink-0" />
 
         {/* Top Header for Tabs (spans both columns) */}
         {needsTabs && (
@@ -121,7 +135,7 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
                     setActiveTabId(tab.id)
                     setHoveredLevel2Id(null)
                   }}
-                  className={`py-1.5 px-1 text-[8px] small:text-[12px] whitespace-nowrap uppercase font-bold tracking-wider border-b-2 transition-colors duration-200 ${
+                  className={`py-1.5 px-1 text-[8px] small:text-[12px] whitespace-nowrap uppercase font-bold tracking-wider border-b transition-colors duration-200 ${
                     isActive
                       ? "border-black text-black"
                       : "border-transparent text-neutral-500 hover:text-black"

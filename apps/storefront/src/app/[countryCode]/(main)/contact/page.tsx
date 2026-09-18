@@ -11,7 +11,7 @@ import {
 } from "@modules/legal/components/layout"
 
 export const metadata: Metadata = {
-  title: "Contact us",
+  title: "Contact Us",
   description:
     "Bacoola's registered office, customer support contact details, and grievance officer.",
 }
@@ -31,7 +31,7 @@ export default function ContactPage() {
           <strong>Email:</strong>{" "}
           <a
             href={`mailto:${LEGAL.email}`}
-            className="font-bold underline underline-offset-[3px] decoration-[1.5px] text-neutral-950 hover:text-neutral-500 transition-colors"
+            className="font-bold underline underline-offset-[3px] decoration-1 text-neutral-950 hover:text-neutral-500 transition-colors"
           >
             {LEGAL.email}
           </a>
@@ -39,7 +39,7 @@ export default function ContactPage() {
           <strong>Telephone:</strong>{" "}
           <a
             href={`tel:${LEGAL.phone.replace(/\s/g, "")}`}
-            className="font-bold underline underline-offset-[3px] decoration-[1.5px] text-neutral-950 hover:text-neutral-500 transition-colors"
+            className="font-bold underline underline-offset-[3px] decoration-1 text-neutral-950 hover:text-neutral-500 transition-colors"
           >
             {LEGAL.phone}
           </a>

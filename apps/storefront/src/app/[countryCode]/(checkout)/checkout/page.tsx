@@ -1,3 +1,4 @@
+import { NO_INDEX } from "@lib/util/seo"
 import { retrieveCartWithInventory } from "@lib/data/cart"
 import { retrieveCustomer } from "@lib/data/customer"
 import PaymentWrapper from "@modules/checkout/components/payment-wrapper"
@@ -12,6 +13,8 @@ import { notFound } from "next/navigation"
 
 export const metadata: Metadata = {
   title: "Checkout",
+  description: "Securely complete your Bacoola order: delivery details, shipping and payment.",
+  robots: NO_INDEX,
 }
 
 export default async function Checkout(props: {

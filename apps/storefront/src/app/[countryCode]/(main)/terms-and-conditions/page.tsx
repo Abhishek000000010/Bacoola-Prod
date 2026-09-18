@@ -11,7 +11,7 @@ import {
 } from "@modules/legal/components/layout"
 
 export const metadata: Metadata = {
-  title: "Terms and conditions",
+  title: "Terms & Conditions",
   description:
     "The conditions of sale governing purchases made from Bacoola through this website.",
 }
@@ -256,7 +256,7 @@ export default function TermsAndConditions() {
           For any query relating to these terms, or to an order, write to us at{" "}
           <a
             href={`mailto:${LEGAL.email}`}
-            className="font-bold underline underline-offset-[3px] decoration-[1.5px] text-neutral-950 hover:text-neutral-500 transition-colors"
+            className="font-bold underline underline-offset-[3px] decoration-1 text-neutral-950 hover:text-neutral-500 transition-colors"
           >
             {LEGAL.email}
           </a>

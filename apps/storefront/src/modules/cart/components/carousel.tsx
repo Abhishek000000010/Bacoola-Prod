@@ -137,7 +137,7 @@ export const Carousel: React.FC<CarouselProps> = ({ products, region }) => {
                         {cheapestPrice.original_price}
                       </span>
                     )}
-                    <span className={cheapestPrice.price_type === "sale" ? "text-rose-600 font-semibold" : ""}>
+                    <span className={cheapestPrice.price_type === "sale" ? "text-sale font-semibold" : ""}>
                       {cheapestPrice.calculated_price}
                     </span>
                   </div>

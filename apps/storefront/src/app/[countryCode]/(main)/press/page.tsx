@@ -3,8 +3,9 @@ import { LEGAL } from "@lib/legal-config"
 import { LegalPage, PolicyLink, Section } from "@modules/legal/components/layout"
 
 export const metadata: Metadata = {
-  title: "Press",
-  description: "Press enquiries and brand asset requests for Bacoola.",
+  title: "Press & Media",
+  description:
+    "Press and media enquiries for Bacoola, including interviews, brand assets and image requests.",
 }
 
 /**
@@ -27,7 +28,7 @@ export default function PressPage() {
           Write to{" "}
           <a
             href={`mailto:${LEGAL.email}?subject=Press enquiry`}
-            className="font-bold underline underline-offset-[3px] decoration-[1.5px] text-neutral-950 hover:text-neutral-500 transition-colors"
+            className="font-bold underline underline-offset-[3px] decoration-1 text-neutral-950 hover:text-neutral-500 transition-colors"
           >
             {LEGAL.email}
           </a>{" "}

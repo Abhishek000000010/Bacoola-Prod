@@ -248,6 +248,45 @@ export async function confirmEmailVerification(
   }
 }
 
+// Kicks off a password reset for the given email. Medusa always resolves
+// this the same way regardless of whether the address has an account, so the
+// caller should show a generic "check your inbox" message either way rather
+// than branching on the result — that's what keeps this from being usable to
+// discover which emails are registered.
+export async function requestPasswordReset(email: string): Promise<void> {
+  await sdk.auth
+    .resetPassword("customer", "emailpass", { identifier: email })
+    .catch(() => {
+      // Swallow: surfacing a network error here would distinguish
+      // "no such account" from "email didn't send", which is exactly the
+      // enumeration this flow is designed to avoid.
+    })
+}
+
+export type ResetPasswordState = { success: boolean; error?: string }
+
+// Consumes the single-use token from the reset-password email to set a new
+// password. The token itself carries the account, so no email is needed here.
+export async function resetPassword(
+  token: string,
+  password: string
+): Promise<ResetPasswordState> {
+  try {
+    await sdk.auth.updateProvider(
+      "customer",
+      "emailpass",
+      { password },
+      token
+    )
+    return { success: true }
+  } catch (error) {
+    return {
+      success: false,
+      error: "This reset link is invalid or has expired. Request a new one.",
+    }
+  }
+}
+
 export async function signout(countryCode: string) {
   await sdk.auth.logout()
 

@@ -5,8 +5,9 @@ import { SortOptions } from "@modules/store/components/refinement-list/sort-prod
 import StoreTemplate from "@modules/store/templates"
 
 export const metadata: Metadata = {
-  title: "Store",
-  description: "Explore all of our products.",
+  title: "Shop All Clothing & Accessories",
+  description:
+    "Browse the full Bacoola collection of clothing, shoes and accessories for women, men, teens and kids. Filter by size, colour and price.",
 }
 
 type StorePageSearchParams = Record<string, string | string[] | undefined> & {

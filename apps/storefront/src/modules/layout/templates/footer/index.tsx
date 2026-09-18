@@ -3,6 +3,8 @@
 import React from "react"
 import { usePathname } from "next/navigation"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import NewsletterForm from "@modules/layout/components/newsletter-form"
+import { openCookieSettings } from "@modules/common/components/cookie-consent"
 
 export default function Footer() {
   const pathname = usePathname()
@@ -15,36 +17,12 @@ export default function Footer() {
       {!isAccountPage && (
         <div className="flex w-full flex-col items-center justify-center bg-white px-4 pb-16 pt-24 text-center">
           <h2 className="text-[12px] font-bold text-[#111111] mb-4">
-            10% off your next purchase by subscribing to the newsletter
+            Subscribe to our newsletter
           </h2>
 
-          <form
-            onSubmit={(event) => event.preventDefault()}
-            className="flex flex-col small:flex-row items-center justify-center gap-2 w-full max-w-[287px] small:max-w-none"
-          >
-            <div className="flex flex-col border border-gray-300 bg-white text-left px-3 relative w-full small:w-[287px] h-[42px] justify-center">
-              <input
-                id="newsletter-form-email-input"
-                name="email"
-                type="email"
-                autoComplete="email"
-                aria-required="true"
-                placeholder="E-mail"
-                required
-                className="w-full bg-transparent text-[12px] font-normal text-[#111111] focus:outline-none placeholder:text-gray-800"
-              />
-            </div>
+          <NewsletterForm />
 
-            <button
-              id="newsletter-form-submit-button"
-              type="submit"
-              className="h-[42px] w-full small:w-auto min-w-[140px] border border-black bg-white px-6 text-[12px] font-bold tracking-normal text-black transition-colors hover:bg-black hover:text-white"
-            >
-              SIGN UP NOW
-            </button>
-          </form>
-
-          <p className="mt-4 text-[12px] font-normal text-[#111111]">
+          <p className="mt-1 text-[12px] font-normal text-[#111111]">
             By subscribing, you confirm that you have read the{" "}
             <LocalizedClientLink
               href="/privacy-policy"
@@ -164,6 +142,13 @@ export default function Footer() {
             <LocalizedClientLink href="/privacy-policy" className={footerLinkClass}>
               Privacy Policy and Cookies
             </LocalizedClientLink>
+            <button
+              type="button"
+              onClick={openCookieSettings}
+              className={footerLinkClass}
+            >
+              Cookie Settings
+            </button>
             <LocalizedClientLink href="/terms-and-conditions" className={footerLinkClass}>
               Terms and Conditions
             </LocalizedClientLink>
@@ -172,7 +157,7 @@ export default function Footer() {
             </LocalizedClientLink>
           </div>
 
-          <div className="select-none text-center text-[12px] font-bold tracking-[0.01em] text-neutral-950 md:ml-auto md:text-right">
+          <div className="select-none text-center text-[12px] font-normal tracking-[0.01em] text-neutral-950 md:ml-auto md:text-right">
             © {new Date().getFullYear()} BACOOLA All rights reserved
           </div>
         </div>

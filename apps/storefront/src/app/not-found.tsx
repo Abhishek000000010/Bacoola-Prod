@@ -1,11 +1,13 @@
+import { NO_INDEX } from "@lib/util/seo"
 import { ArrowUpRightMini } from "@medusajs/icons"
 import { Text } from "@modules/common/components/ui"
 import { Metadata } from "next"
 import Link from "next/link"
 
 export const metadata: Metadata = {
-  title: "404",
-  description: "Something went wrong",
+  title: "Page Not Found",
+  description: "Sorry, the page you're looking for doesn't exist or has moved.",
+  robots: NO_INDEX,
 }
 
 export default function NotFound() {

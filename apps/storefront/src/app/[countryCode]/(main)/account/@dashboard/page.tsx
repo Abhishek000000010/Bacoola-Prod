@@ -6,7 +6,8 @@ import { retrieveCustomer } from "@lib/data/customer"
 import { listOrders } from "@lib/data/orders"
 
 export const metadata: Metadata = {
-  title: "Account",
+  // Slot pages on the /account route itself skip the title template.
+  title: { absolute: "Account | Bacoola" },
   description: "Overview of your account activity.",
 }
 

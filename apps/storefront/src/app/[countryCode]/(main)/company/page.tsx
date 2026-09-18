@@ -10,8 +10,9 @@ import {
 } from "@modules/legal/components/layout"
 
 export const metadata: Metadata = {
-  title: "Company",
-  description: "About Bacoola — who we are and how to reach us.",
+  title: "About Us",
+  description:
+    "About Bacoola: who we are, what we make, and how to reach our company, press, careers and customer service teams.",
 }
 
 /**

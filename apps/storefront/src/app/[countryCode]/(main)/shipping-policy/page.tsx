@@ -8,7 +8,7 @@ import {
 } from "@modules/legal/components/layout"
 
 export const metadata: Metadata = {
-  title: "Shipping policy",
+  title: "Shipping Policy",
   description:
     "Where Bacoola delivers, how long it takes, what it costs, and how to track your order.",
 }
@@ -121,7 +121,7 @@ export default function ShippingPolicy() {
           refuse delivery where you can, and tell us within 48 hours at{" "}
           <a
             href={`mailto:${LEGAL.email}`}
-            className="font-bold underline underline-offset-[3px] decoration-[1.5px] text-neutral-950 hover:text-neutral-500 transition-colors"
+            className="font-bold underline underline-offset-[3px] decoration-1 text-neutral-950 hover:text-neutral-500 transition-colors"
           >
             {LEGAL.email}
           </a>
@@ -145,7 +145,7 @@ export default function ShippingPolicy() {
           For any question about a delivery, write to{" "}
           <a
             href={`mailto:${LEGAL.email}`}
-            className="font-bold underline underline-offset-[3px] decoration-[1.5px] text-neutral-950 hover:text-neutral-500 transition-colors"
+            className="font-bold underline underline-offset-[3px] decoration-1 text-neutral-950 hover:text-neutral-500 transition-colors"
           >
             {LEGAL.email}
           </a>{" "}

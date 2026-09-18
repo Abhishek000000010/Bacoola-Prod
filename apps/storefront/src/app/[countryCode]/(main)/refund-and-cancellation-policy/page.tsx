@@ -9,7 +9,7 @@ import {
 } from "@modules/legal/components/layout"
 
 export const metadata: Metadata = {
-  title: "Refund and cancellation policy",
+  title: "Refund & Cancellation Policy",
   description:
     "How to cancel an order, return an item within 15 days, and how refunds are processed.",
 }
@@ -76,7 +76,7 @@ export default function RefundAndCancellationPolicy() {
           select the order, and raise a return request. Alternatively, write to{" "}
           <a
             href={`mailto:${LEGAL.email}`}
-            className="font-bold underline underline-offset-[3px] decoration-[1.5px] text-neutral-950 hover:text-neutral-500 transition-colors"
+            className="font-bold underline underline-offset-[3px] decoration-1 text-neutral-950 hover:text-neutral-500 transition-colors"
           >
             {LEGAL.email}
           </a>{" "}
@@ -139,7 +139,7 @@ export default function RefundAndCancellationPolicy() {
           tell us within 48 hours of delivery at{" "}
           <a
             href={`mailto:${LEGAL.email}`}
-            className="font-bold underline underline-offset-[3px] decoration-[1.5px] text-neutral-950 hover:text-neutral-500 transition-colors"
+            className="font-bold underline underline-offset-[3px] decoration-1 text-neutral-950 hover:text-neutral-500 transition-colors"
           >
             {LEGAL.email}
           </a>

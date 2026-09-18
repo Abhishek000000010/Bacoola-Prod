@@ -111,7 +111,7 @@ export default function CategorySubmenuBar({
                 href={tab.handle === "store" ? "/store" : `/categories/${tab.handle}`}
                 className={`transition-colors py-1 cursor-pointer hover:text-black ${
                   isActive
-                    ? "text-black border-b-2 border-black font-bold"
+                    ? "text-black border-b border-black font-bold"
                     : "text-gray-500 hover:text-black"
                 }`}
               >

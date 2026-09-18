@@ -53,7 +53,7 @@ const CartTemplate = ({
           </div>
         ) : (
           <div>
-            <EmptyCartMessage />
+            <EmptyCartMessage customer={customer} />
           </div>
         )}
       </div>

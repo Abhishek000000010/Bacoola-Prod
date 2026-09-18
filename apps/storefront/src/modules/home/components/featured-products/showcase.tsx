@@ -117,7 +117,7 @@ export const FeaturedProductsShowcase: React.FC<FeaturedProductsShowcaseProps> =
                       <span
                         className={
                           cheapestPrice.price_type === "sale"
-                            ? "text-rose-600 font-medium"
+                            ? "text-sale font-medium"
                             : "text-[#111111]"
                         }
                       >

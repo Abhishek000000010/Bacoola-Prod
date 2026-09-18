@@ -11,8 +11,9 @@ import path from "path"
  * so neither can be reached by a widget at all.
  *
  * What every one of those places *does* share is the admin's single index.html.
- * This Vite plugin appends one stylesheet to it, which the dashboard then
- * carries onto every route. Two things are restyled:
+ * This Vite plugin adds to its <head>: the tab title, description, robots and
+ * favicon (see ICONS / TITLE_SCRIPT below), and one stylesheet, which the
+ * dashboard then carries onto every route. Two things are restyled:
  *
  *   1. LogoBox — the dark rounded square holding Medusa's mark, rendered on the
  *      reset-password and invite screens. Turned into the Bacoola wordmark.
@@ -34,6 +35,54 @@ import path from "path"
 
 /** The wordmark, shared with the login widget. */
 const LOGO_PATH = path.resolve(__dirname, "../admin/assets/bacoola-logo.png")
+
+/**
+ * The storefront's "B" favicon (apps/storefront/src/app/icon.png and
+ * apple-icon.png), copied in at the sizes a browser tab and a home-screen
+ * bookmark want. Inlined as data URIs for the same /app base-path reason as the
+ * wordmark.
+ */
+const ICONS = [
+  { file: "admin-favicon.png", rel: "icon", sizes: "48x48" },
+  { file: "admin-icon-192.png", rel: "icon", sizes: "192x192" },
+  { file: "admin-apple-icon.png", rel: "apple-touch-icon", sizes: "180x180" },
+]
+
+export const ADMIN_TITLE = "Bacoola Admin"
+const ADMIN_DESCRIPTION =
+  "Bacoola store administration: manage products, orders, customers, inventory and content."
+
+/**
+ * The dashboard titles every route itself through react-helmet as
+ * "<Page> - Medusa" (or just "Medusa"), from a hard-coded suffix in
+ * @medusajs/dashboard. There is no config for it, and its module is pre-bundled
+ * by Vite, so it can't be rewritten at build time either. Instead this watches
+ * <title> and swaps the suffix whenever Helmet writes it: "Orders | Bacoola
+ * Admin". Helmet owns document.title, not a React-rendered node, so rewriting it
+ * can't upset React's reconciliation. The equality check stops the observer
+ * reacting to its own write.
+ */
+const TITLE_SCRIPT = `
+(function () {
+  var BRAND = ${JSON.stringify(ADMIN_TITLE)};
+  function brand(t) {
+    if (!t || t === "Medusa") return BRAND;
+    var SUFFIX = " - Medusa";
+    if (t.slice(-SUFFIX.length) === SUFFIX) return t.slice(0, -SUFFIX.length) + " | " + BRAND;
+    return t;
+  }
+  function apply() {
+    var next = brand(document.title);
+    if (next !== document.title) document.title = next;
+  }
+  apply();
+  new MutationObserver(apply).observe(document.head, {
+    subtree: true,
+    childList: true,
+    characterData: true,
+  });
+})();
+`.trim()
 
 /**
  * LogoBox's own classes, from @medusajs/dashboard's logo-box.tsx. The `after:`
@@ -148,9 +197,41 @@ export function bacoolaAdminBranding() {
 
       const dataUri = `data:image/png;base64,${logo.toString("base64")}`
 
+      const iconTags = ICONS.flatMap(({ file, rel, sizes }) => {
+        try {
+          const png = fs.readFileSync(path.resolve(__dirname, "../admin/assets", file))
+          return [
+            {
+              tag: "link",
+              attrs: { rel, type: "image/png", sizes, href: `data:image/png;base64,${png.toString("base64")}` },
+              injectTo: "head" as const,
+            },
+          ]
+        } catch {
+          console.warn(`[bacoola] admin favicon ${file} missing — skipped`)
+          return []
+        }
+      })
+
       return {
-        html,
+        // The bundler ships an empty placeholder favicon; drop it so the browser
+        // doesn't prefer it over ours.
+        html: html.replace(/<link[^>]*data-placeholder-favicon[^>]*>/, ""),
         tags: [
+          { tag: "title", children: ADMIN_TITLE, injectTo: "head" as const },
+          {
+            tag: "meta",
+            attrs: { name: "description", content: ADMIN_DESCRIPTION },
+            injectTo: "head" as const,
+          },
+          // A login screen for store staff has no business in search results.
+          {
+            tag: "meta",
+            attrs: { name: "robots", content: "noindex, nofollow" },
+            injectTo: "head" as const,
+          },
+          ...iconTags,
+          { tag: "script", children: TITLE_SCRIPT, injectTo: "head" as const },
           {
             tag: "style",
             attrs: { "data-bacoola-branding": "" },

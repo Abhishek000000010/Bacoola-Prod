@@ -1,10 +1,10 @@
 import React from "react"
-import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { CreditCard, RotateCcw, Shirt, Store, Truck, UserRound } from "lucide-react"
 
 export const metadata = {
-  title: "Help",
-  description: "Find answers to your questions",
+  title: "Help & Customer Service",
+  description:
+    "Get help with orders, delivery, returns, refunds, payments and your Bacoola account, or find out how to contact our customer service team.",
 }
 
 const helpCategories = [
@@ -70,12 +70,12 @@ export default function HelpPage() {
           <ul className="flex flex-col gap-y-6">
             {faqs.map((question, index) => (
               <li key={index}>
-                <LocalizedClientLink
+                <a
                   href="#"
                   className="text-[12px] lg:text-[14px] font-normal tracking-wide hover:text-[#555555] transition-colors"
                 >
                   {question}
-                </LocalizedClientLink>
+                </a>
               </li>
             ))}
           </ul>
@@ -90,7 +90,7 @@ export default function HelpPage() {
             {helpCategories.map((category, index) => {
               const Icon = category.icon
               return (
-                <LocalizedClientLink
+                <a
                   key={index}
                   href={category.href}
                   className="flex flex-col items-center justify-center text-center p-8 border-r border-b border-gray-200 hover:bg-gray-50 transition-colors aspect-[4/3]"
@@ -99,7 +99,7 @@ export default function HelpPage() {
                   <span className="text-[12px] lg:text-[14px] font-normal tracking-wide">
                     {category.title}
                   </span>
-                </LocalizedClientLink>
+                </a>
               )
             })}
           </div>

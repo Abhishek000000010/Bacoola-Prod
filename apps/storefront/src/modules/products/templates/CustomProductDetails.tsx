@@ -17,11 +17,14 @@ import StoreAvailabilityPanel from "../components/store-availability-panel"
 import NotifyRestockPanel from "../components/notify-restock-panel"
 import { STORES } from "@lib/util/stores"
 import { FadeIn } from "@modules/common/components/fade-in"
+import LookPanel from "../components/look-panel"
+import { lookForColour, ResolvedLook } from "@lib/util/look"
 interface CustomProductDetailsProps {
   product: HttpTypes.StoreProduct
   region: HttpTypes.StoreRegion
   countryCode: string
   images: HttpTypes.StoreProductImage[]
+  look?: ResolvedLook | null
 }
 
 const ChevronIcon = ({ isOpen }: { isOpen: boolean }) => (
@@ -277,6 +280,7 @@ export default function CustomProductDetails({
   region,
   countryCode,
   images,
+  look,
 }: CustomProductDetailsProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -326,6 +330,7 @@ export default function CustomProductDetails({
   const [measurementsOpen, setMeasurementsOpen] = useState(false)
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [storesOpen, setStoresOpen] = useState(false)
+  const [lookOpen, setLookOpen] = useState(false)
   // Mobile-only: the size picker is deferred to a bottom sheet that opens on ADD,
   // so the product page itself stays clean (desktop keeps the inline size list).
   const [sizeSheetOpen, setSizeSheetOpen] = useState(false)
@@ -688,6 +693,15 @@ export default function CustomProductDetails({
     []
   )
 
+  // "See look" follows the colour on screen, like the gallery: that colour's own
+  // look if the admin set one, else the product's default. No items, no button.
+  const lookItems = useMemo(() => {
+    const colourOption = (product.options ?? []).find((o) =>
+      /^colou?rs?$/i.test((o.title ?? "").trim())
+    )
+    return lookForColour(look, colourOption ? options[colourOption.id] : undefined)
+  }, [look, product.options, options])
+
   // Mobile ADD: pick a size in the sheet, then add that variant straight to the
   // bag. State updates are async, so we resolve the variant from the chosen size
   // directly instead of waiting on the selectedVariant memo.
@@ -795,7 +809,11 @@ export default function CustomProductDetails({
               if (optionTitle === "size") {
                 return (
                   <div key={option.id} className="hidden lg:flex flex-col w-full mb-6">
-                    <div className="flex flex-col w-full text-[12px] lg:text-[14px] font-bold text-neutral-900 border-y border-neutral-200 max-h-[251px] overflow-y-auto hover-scrollbar">
+                    {/* Box grid, as on the Mango reference: six across, spanning the same width as the ADD row.
+                        Each cell pulls back 1px (-mt-px/-ml-px) so neighbouring
+                        borders overlap into a single hairline; the selected cell
+                        is raised (z-10) so its dark outline shows on all sides. */}
+                    <div className="grid grid-cols-6 w-full pt-px pl-px text-[12px] lg:text-[14px] font-bold text-neutral-900">
                       {values.map((val) => {
                         const isSelected = currentValue === val
                         const variant = variantForSize(val)
@@ -812,21 +830,22 @@ export default function CustomProductDetails({
                                 : setOptionValue(option.id, val)
                             }
                             title={outOfStock ? "Notify me when back in stock" : undefined}
-                            className={`flex items-center justify-between py-2.5 px-2 w-full focus:outline-none transition-colors ${
+                            aria-pressed={isSelected}
+                            className={`relative -mt-px -ml-px flex h-[60px] flex-col items-start justify-start gap-y-2 border bg-white px-3 py-3 text-left focus:outline-none focus-visible:z-10 focus-visible:border-neutral-800 transition-colors ${
                               isSelected
-                                ? "bg-neutral-100 text-black"
+                                ? "z-10 border-neutral-800 text-black"
                                 : outOfStock
-                                ? "text-neutral-300 hover:bg-neutral-50"
-                                : "text-neutral-900 hover:bg-neutral-100"
+                                ? "border-neutral-300 text-neutral-400 hover:z-10 hover:border-neutral-500"
+                                : "border-neutral-300 text-neutral-900 hover:z-10 hover:border-neutral-500"
                             }`}
                           >
-                            <span className={`uppercase ${outOfStock ? "line-through decoration-neutral-300" : ""}`}>
+                            <span className={`uppercase leading-none ${outOfStock ? "line-through decoration-neutral-400" : ""}`}>
                               {val}
                             </span>
                             {outOfStock && (
                               <svg
                                 aria-hidden="true"
-                                className="w-4 h-4 text-neutral-400 shrink-0"
+                                className="w-3.5 h-3.5 text-neutral-900 shrink-0"
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 stroke="currentColor"
@@ -935,6 +954,17 @@ export default function CustomProductDetails({
               />
             </div>
 
+            {/* See look -- only when the admin linked in-stock products to the
+                colour on screen (or to the product as a whole). */}
+            {lookItems.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setLookOpen(true)}
+                className="mt-2 w-full py-3 border border-[#181818] bg-white text-[#181818] text-[12px] lg:text-[14px] font-bold uppercase hover:bg-neutral-50 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-black"
+              >
+                See look
+              </button>
+            )}
 
             {/* Tags and Description */}
             <div className="flex gap-x-5 mt-6 mb-4 text-[12px] lg:text-[14px] font-bold text-neutral-800 uppercase tracking-[0.05em] flex-wrap">
@@ -1109,6 +1139,10 @@ export default function CustomProductDetails({
           variantTitle={notifyVariant.title ?? undefined}
           onClose={() => setNotifyVariant(null)}
         />
+      )}
+
+      {lookOpen && lookItems.length > 0 && (
+        <LookPanel items={lookItems} onClose={() => setLookOpen(false)} />
       )}
 
       {storesOpen && <StoreAvailabilityPanel onClose={() => setStoresOpen(false)} />}

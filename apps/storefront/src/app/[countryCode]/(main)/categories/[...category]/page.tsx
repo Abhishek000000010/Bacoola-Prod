@@ -1,7 +1,16 @@
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
 
-import { getCategoryByHandle, listCategories } from "@lib/data/categories"
+import {
+  CATEGORY_LINK_FIELDS,
+  getCategoryByHandle,
+  listCategories,
+} from "@lib/data/categories"
+import {
+  categoryFallbackDescription,
+  categorySeoName,
+  toMetaDescription,
+} from "@lib/util/seo"
 import { listRegions } from "@lib/data/regions"
 import { HttpTypes, StoreRegion } from "@medusajs/types"
 import CategoryTemplate from "@modules/categories/templates"
@@ -35,17 +44,22 @@ export async function generateStaticParams() {
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params
   try {
-    const productCategory = await getCategoryByHandle(params.category)
+    // Same call and fields as the nav, so it's served from that cache.
+    const [productCategory, allCategories] = await Promise.all([
+      getCategoryByHandle(params.category),
+      listCategories({ limit: 1000, fields: CATEGORY_LINK_FIELDS }),
+    ])
 
-    const title = productCategory.name + " | Medusa Store"
-
-    const description = productCategory.description ?? `${title} category.`
+    const seoName = categorySeoName(productCategory, allCategories)
 
     return {
-      title: `${title} | Medusa Store`,
-      description,
+      title: seoName,
+      description:
+        toMetaDescription(productCategory.description) ??
+        categoryFallbackDescription(seoName),
+      // Was relative ("women-clothing-v2"), which resolved to the wrong URL.
       alternates: {
-        canonical: `${params.category.join("/")}`,
+        canonical: `/${params.countryCode}/categories/${params.category.join("/")}`,
       },
     }
   } catch {

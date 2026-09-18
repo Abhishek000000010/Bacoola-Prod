@@ -20,6 +20,8 @@ module.exports = {
         padding: "padding-top padding-right padding-bottom padding-left",
       },
       colors: {
+        // Every discounted price on the site. Same red as the Sale links in the menu.
+        sale: "#D01313",
         grey: {
           0: "#FFFFFF",
           5: "#F9FAFB",

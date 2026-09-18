@@ -1,9 +1,11 @@
+import { NO_INDEX } from "@lib/util/seo"
 import InteractiveLink from "@modules/common/components/interactive-link"
 import { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "404",
-  description: "Something went wrong",
+  title: "Page Not Found",
+  description: "Sorry, the page you're looking for doesn't exist or has moved.",
+  robots: NO_INDEX,
 }
 
 export default async function NotFound() {

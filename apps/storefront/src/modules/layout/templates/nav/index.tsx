@@ -48,7 +48,7 @@ export default async function Nav() {
     <>
     <div className="sticky top-0 inset-x-0 z-50">
       <header className="relative h-[56px] mx-auto bg-white transition-colors duration-200">
-        <nav className="w-full h-full px-4 sm:px-[40px] max-w-[1550px] mx-auto flex items-center justify-between text-small-regular relative">
+        <nav className="w-full h-full px-4 sm:px-[40px] flex items-center justify-between text-small-regular relative">
           
           {/* DESKTOP LAYOUT (1024px and wider) */}
           <div className="hidden small:grid grid-cols-3 items-center w-full h-full">

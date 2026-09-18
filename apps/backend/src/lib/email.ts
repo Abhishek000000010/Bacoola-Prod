@@ -43,6 +43,8 @@ export type SendEmailInput = {
   html: string
   text?: string
   attachments?: EmailAttachment[]
+  /** Extra headers, e.g. List-Unsubscribe on marketing mail. */
+  headers?: Record<string, string>
 }
 
 let configured = false
@@ -82,6 +84,7 @@ export async function sendEmail(logger: Logger, input: SendEmailInput): Promise<
       from: fromName ? { email: from, name: fromName } : from,
       subject: input.subject,
       html: input.html,
+      headers: input.headers,
       // SendGrid recommends a plain-text part too; fall back to a stripped body.
       text: input.text ?? input.html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
       attachments: input.attachments?.map((a) => ({

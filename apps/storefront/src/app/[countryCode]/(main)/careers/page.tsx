@@ -3,8 +3,9 @@ import { LEGAL } from "@lib/legal-config"
 import { LegalPage, PolicyLink, Section } from "@modules/legal/components/layout"
 
 export const metadata: Metadata = {
-  title: "Work for Bacoola",
-  description: "Careers at Bacoola — how to apply and what we look for.",
+  title: "Careers",
+  description:
+    "Careers at Bacoola: the roles we hire for, what we look for in candidates, and how to apply to join our team.",
 }
 
 /**
@@ -39,7 +40,7 @@ export default function CareersPage() {
           Write to{" "}
           <a
             href={`mailto:${LEGAL.email}?subject=Application`}
-            className="font-bold underline underline-offset-[3px] decoration-[1.5px] text-neutral-950 hover:text-neutral-500 transition-colors"
+            className="font-bold underline underline-offset-[3px] decoration-1 text-neutral-950 hover:text-neutral-500 transition-colors"
           >
             {LEGAL.email}
           </a>{" "}

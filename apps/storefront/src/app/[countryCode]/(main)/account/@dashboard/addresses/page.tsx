@@ -10,7 +10,7 @@ import InlineAddAddress from "@modules/account/components/address-card/inline-ad
 
 export const metadata: Metadata = {
   title: "Addresses",
-  description: "View your addresses",
+  description: "View and manage your saved delivery addresses.",
 }
 
 export default async function Addresses(props: {
@@ -52,7 +52,7 @@ export default async function Addresses(props: {
             <p className="text-[12px] lg:text-[14px] font-normal mb-10 max-w-[420px] leading-relaxed text-[#111111]">
               You have still not saved any delivery address. Add one now and save time on your future purchases.
             </p>
-            <InlineAddAddress region={region} />
+            <InlineAddAddress region={region} customer={customer} />
           </div>
         )}
 

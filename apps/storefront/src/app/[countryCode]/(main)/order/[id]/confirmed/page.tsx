@@ -1,3 +1,4 @@
+import { NO_INDEX } from "@lib/util/seo"
 import { retrieveOrder } from "@lib/data/orders"
 import OrderCompletedTemplate from "@modules/order/templates/order-completed-template"
 import { Metadata } from "next"
@@ -8,7 +9,8 @@ type Props = {
 }
 export const metadata: Metadata = {
   title: "Order Confirmed",
-  description: "You purchase was successful",
+  description: "Thank you for shopping with Bacoola. Your order has been placed successfully.",
+  robots: NO_INDEX,
 }
 
 export default async function OrderConfirmedPage(props: Props) {

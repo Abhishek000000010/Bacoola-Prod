@@ -226,6 +226,12 @@ module.exports = defineConfig({
       // src/subscribers/restock-notify.ts).
       resolve: "./src/modules/restock-notification",
     },
+    {
+      // Newsletter: subscribers from the footer form and My subscriptions, with
+      // per-address unsubscribe tokens. Store routes in src/api/store/newsletter,
+      // admin list + CSV export in src/api/admin/newsletter-subscribers.
+      resolve: "./src/modules/newsletter",
+    },
   ],
   plugins: [
     {

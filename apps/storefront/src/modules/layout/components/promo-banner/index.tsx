@@ -68,6 +68,12 @@ const PromoBanner: React.FC<PromoBannerProps> = ({ categories }) => {
   const cleanSegments =
     segments.length > 0 && segments[0].length === 2 ? segments.slice(1) : segments
 
+  // The home page hero is the storefront's front door; a sale strip above it
+  // competes with the campaign imagery.
+  if (cleanSegments.length === 0) {
+    return null
+  }
+
   // A product page belongs to no section, so any percentage shown here is a
   // guess — and a wrong one contradicts the discount on the product itself.
   if (cleanSegments[0] === "products") {
@@ -83,7 +89,9 @@ const PromoBanner: React.FC<PromoBannerProps> = ({ categories }) => {
     cleanSegments[0] === "account" ||
     cleanSegments[0] === "search" ||
     cleanSegments[0] === "wishlist" ||
-    cleanSegments[0] === "order"
+    cleanSegments[0] === "order" ||
+    cleanSegments[0] === "reset-password" ||
+    cleanSegments[0] === "verify-account"
   ) {
     return null
   }
